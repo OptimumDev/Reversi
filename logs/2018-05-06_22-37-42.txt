@@ -1,0 +1,2 @@
+22:37:42 Player VS Player (Board size: 8x8)
+22:37:46 Player's turn	(Black): placed checker at Point(2, 3)

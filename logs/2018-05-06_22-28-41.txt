@@ -1,0 +1,4 @@
+22:28:41 Player VS Hard Bot (Board size: 4x4)
+22:28:42 Bot's turn	(Black): passed
+22:28:46 Player's turn	(Black): placed checker at Point(3, 2)
+22:28:47 Bot's turn	(Black): passed

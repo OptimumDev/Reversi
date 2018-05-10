@@ -1,0 +1,2 @@
+22:35:19 Player VS Easy Bot (Board size: 18x18)
+22:35:20 Bot's turn	(Black): placed checker at Point(7, 8)

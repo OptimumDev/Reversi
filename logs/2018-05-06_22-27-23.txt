@@ -1,0 +1,2 @@
+22:27:23 Player VS Hard Bot (Board size: 4x4)
+22:27:24 Bot's turn	(Black): passed
