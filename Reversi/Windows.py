@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QSize
 from Point import Point
 from Game import Game
+from Units import Checker
 from datetime import datetime
 import time
 import os
@@ -142,7 +143,7 @@ class GameWindow(QMainWindow):
         self.__last_player_turn_result = 0
 
         self.__width = (self.__game.size + self.__shift) * self.IMAGE_SIZE + 600
-        self.__height = (self.__game.size + self.__shift * 2) * self.IMAGE_SIZE
+        self.__height = (self.__game.size + self.__shift * 2) * self.IMAGE_SIZE + 20
 
         logs = os.listdir('logs')
         if len(logs) == 100:
@@ -389,8 +390,11 @@ class GameWindow(QMainWindow):
 
     def draw_bot(self, painter):
         painter.setFont(self.__font)
-        painter.drawText(self.__shift * self.IMAGE_SIZE, self.__height - 10,
-                         'Bot difficulty: {}'.format(self.__game.BOT_DIFFICULTIES[self.__game.BOT_DIFFICULTY]))
+        difficulty = self.__game.BOT_DIFFICULTIES[self.__game.BOT_DIFFICULTY]
+        painter.drawText((self.__shift + 1) * self.IMAGE_SIZE + 10, self.__height - 10,
+                         f'Bot difficulty: {difficulty}')
+        painter.drawImage(self.__shift * self.IMAGE_SIZE, self.__height - self.IMAGE_SIZE - 10,
+                          QImage(f'images/{difficulty}Bot.png').scaled(self.IMAGE_SIZE, self.IMAGE_SIZE))
 
     def draw_signature(self, painter):
         painter.drawText(self.__width - 125, self.__height - 10, 'Made by Artemiy Izakov')
@@ -413,13 +417,14 @@ class GameWindow(QMainWindow):
     def draw_turn(self, painter):
         painter.setFont(self.__font)
         if not self.__game.bot_active:
-            turn = Game.WHITE if self.__game.is_white_turn else Game.BLACK
+            turn = 'First Player' if not self.__game.is_white_turn else 'Second Player'
             text = r"{}'s turn".format(turn)
         else:
-            color = ' ({})'.format(Game.WHITE if self.__game.PLAYER_IS_WHITE else Game.BLACK)
             turn = Game.YOU + "r" if self.__game.is_white_turn == self.__game.PLAYER_IS_WHITE else Game.BOT + "'s"
-            text = r"{} turn".format(turn) + (color if turn == Game.YOU + "r" else '')
-        painter.drawText(self.__shift + self.IMAGE_SIZE, 35, text)
+            text = r"{} turn".format(turn)
+        painter.drawText((self.__shift + 1) * self.IMAGE_SIZE, 35, text)
+        image = Checker.WHITE if self.__game.is_white_turn else Checker.BLACK
+        painter.drawImage(self.__shift * self.IMAGE_SIZE, 0, image.scaled(self.IMAGE_SIZE, self.IMAGE_SIZE))
 
     def draw_cells(self, painter):
         for cell in self.__game.game_map:

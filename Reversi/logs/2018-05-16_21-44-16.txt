@@ -1,4 +1,0 @@
-21:44:16 Player VS Player (Board size: 8x8)
-21:44:17 Player's turn	(Black): passed
-21:44:18 Player's turn	(White): passed
-21:44:18 Draw
