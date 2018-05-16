@@ -2,9 +2,9 @@
 
 
 from functools import partial
-from PyQt5.QtGui import QIcon, QPainter, QFont, QImage
+from PyQt5.QtGui import QIcon, QPainter, QFont
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from Point import Point
 from Game import Game
 from datetime import datetime
@@ -179,7 +179,6 @@ class GameWindow(QMainWindow):
                                                 (self.__game.size + self.__shift) * self.__image_size + 10,
                                                 (self.__shift + 2) * self.__image_size,
                                                 lambda: self.make_turn(self.__pass_button))
-        self.__pass_button.setIcon(QIcon('images/Hand.png'))
 
         self.__save_button = self.create_button('Save', self.__width - 410, 10, self.save)
 
