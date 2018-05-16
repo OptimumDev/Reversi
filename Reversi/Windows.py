@@ -187,9 +187,9 @@ class GameWindow(QMainWindow):
 
         self.__chose_mode_button = self.create_button('Settings', self.__width - 270, 10, self.chose_mod)
 
-        self.__restart_button = self.create_button('Restart', self.__width - 160, 10, self.restart)
+        self.__restart_button = self.create_button('Restart', self.__width - 160, 10, lambda: self.restart(True))
 
-        self.__quit_button = self.create_button('Quit', self.__width - 70, 10, self.quit)
+        self.__quit_button = self.create_button('Quit', self.__width - 70, 10, lambda: self.quit(True))
 
     def get_checker_buttons(self):
         buttons = []
@@ -253,8 +253,8 @@ class GameWindow(QMainWindow):
             return
         qApp.exit(GameWindow.EXIT_CODE_CHANGE_MODE)
 
-    def restart(self):
-        if not self.ask_for_save():
+    def restart(self, to_ask):
+        if to_ask and not self.ask_for_save():
             return
         bot_active = self.__game.bot_active
         size = self.__game.size
@@ -264,8 +264,8 @@ class GameWindow(QMainWindow):
         self.destroy()
         GameWindow(True, size, bot_active, player_first, bot_difficulty)
 
-    def quit(self):
-        if not self.ask_for_save():
+    def quit(self, to_ask):
+        if to_ask and not self.ask_for_save():
             return
         qApp.exit()
 
@@ -292,9 +292,9 @@ class GameWindow(QMainWindow):
         game_over_window.addButton('Quit', QMessageBox.RejectRole)
         game_over_window.exec()
         if game_over_window.clickedButton() == restart:
-            self.restart()
+            self.restart(False)
         else:
-            self.quit()
+            self.quit(False)
 
     def make_turn(self, button):
         player_turn = self.player_turn(button)
