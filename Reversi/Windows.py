@@ -2,7 +2,7 @@
 
 
 from functools import partial
-from PyQt5.QtGui import QIcon, QPainter, QFont
+from PyQt5.QtGui import QIcon, QPainter, QFont, QImage
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QSize
 from Point import Point
@@ -120,7 +120,9 @@ class ChooseModeWindow(QWidget):
 
 
 class GameWindow(QMainWindow):
+
     EXIT_CODE_CHANGE_MODE = -123
+    IMAGE_SIZE = 50
 
     def __init__(self, *args):
         super().__init__()
@@ -130,7 +132,6 @@ class GameWindow(QMainWindow):
         if is_new_game:
             if len(args) != 5:
                 raise ValueError
-        self.__image_size = 50
         self.__shift = 1
         self.__bot_speed = 1
         self.__font = QFont("times", 20)
@@ -140,8 +141,8 @@ class GameWindow(QMainWindow):
             self.__game = Game(args[0], args[1])
         self.__last_player_turn_result = 0
 
-        self.__width = (self.__game.size + self.__shift) * self.__image_size + 600
-        self.__height = (self.__game.size + self.__shift * 2) * self.__image_size
+        self.__width = (self.__game.size + self.__shift) * self.IMAGE_SIZE + 600
+        self.__height = (self.__game.size + self.__shift * 2) * self.IMAGE_SIZE
 
         logs = os.listdir('logs')
         if len(logs) == 100:
@@ -173,28 +174,30 @@ class GameWindow(QMainWindow):
         self.setWindowIcon(QIcon('images/icon.png'))
         self.setWindowTitle('Reversi')
 
+        self.__controls = []
+
         self.__checker_buttons = self.get_checker_buttons()
 
         self.__pass_button = self.create_button('Pass',
-                                                (self.__game.size + self.__shift) * self.__image_size + 10,
-                                                (self.__shift + 2) * self.__image_size,
+                                                (self.__game.size + self.__shift) * self.IMAGE_SIZE + 10,
+                                                (self.__shift + 2) * self.IMAGE_SIZE,
                                                 lambda: self.make_turn(self.__pass_button))
 
-        self.__save_button = self.create_button('Save', self.__width - 410, 10, self.save)
+        self.__save_button = self.create_button('Save', self.__width - 370, 10, self.save)
 
-        self.__chose_mode_button = self.create_button('Change Settings', self.__width - 310, 10, self.chose_mod)
+        self.__chose_mode_button = self.create_button('Settings', self.__width - 270, 10, self.chose_mod)
 
-        self.__restart_button = self.create_button('Restart', self.__width - 210, 10, self.restart)
+        self.__restart_button = self.create_button('Restart', self.__width - 160, 10, self.restart)
 
-        self.__quit_button = self.create_button('Quit', self.__width - 110, 10, self.quit)
+        self.__quit_button = self.create_button('Quit', self.__width - 70, 10, self.quit)
 
     def get_checker_buttons(self):
         buttons = []
         for cell in self.__game.game_map:
             if cell.coordinates not in self.__game.occupied_coordinates:
                 button = QPushButton('', self)
-                coordinates = cell.coordinates.to_image_coordinates(self.__image_size, self.__shift)
-                button.setGeometry(coordinates.x, coordinates.y, self.__image_size, self.__image_size)
+                coordinates = cell.coordinates.to_image_coordinates(self.IMAGE_SIZE, self.__shift)
+                button.setGeometry(coordinates.x, coordinates.y, self.IMAGE_SIZE, self.IMAGE_SIZE)
                 button.clicked.connect(partial(self.make_turn, button))
                 button.setStyleSheet("background: transparent")
                 buttons.append(button)
@@ -221,8 +224,10 @@ class GameWindow(QMainWindow):
 
     def create_button(self, name, x, y, action):
         button = QPushButton(name, self)
-        button.move(x, y)
+        button.setGeometry(x, y, self.IMAGE_SIZE, self.IMAGE_SIZE)
         button.clicked.connect(action)
+        button.setStyleSheet("background: transparent; color: transparent;")
+        self.__controls.append(button)
         return button
 
     def highlight_buttons(self):
@@ -326,7 +331,7 @@ class GameWindow(QMainWindow):
         return success
 
     def player_turn(self, button):
-        coordinates = Point(button.x(), button.y()).to_cell_coordinates(self.__image_size, self.__shift)
+        coordinates = Point(button.x(), button.y()).to_cell_coordinates(self.IMAGE_SIZE, self.__shift)
         color = Game.WHITE if self.__game.is_white_turn else Game.BLACK
         if button == self.__pass_button:
             self.log("Player's turn\t({}): passed".format(color))
@@ -345,7 +350,7 @@ class GameWindow(QMainWindow):
 
     def get_button(self, coordinates):
         for button in self.__checker_buttons:
-            button_coordinates = Point(button.x(), button.y()).to_cell_coordinates(self.__image_size, self.__shift)
+            button_coordinates = Point(button.x(), button.y()).to_cell_coordinates(self.IMAGE_SIZE, self.__shift)
             if coordinates == button_coordinates:
                 return button
 
@@ -367,15 +372,24 @@ class GameWindow(QMainWindow):
         self.draw_signature(painter)
         self.draw_turn(painter)
         self.draw_score(painter)
+        self.draw_controls(painter)
 
         if self.__game.bot_active:
             self.draw_bot(painter)
 
         painter.end()
 
+    def draw_controls(self, painter):
+        for button in self.__controls:
+            painter.drawImage(button.x(), button.y(),
+                              QImage(f'images/{button.text()}.png').scaled(self.IMAGE_SIZE, self.IMAGE_SIZE))
+            painter.drawText(button.x() - self.IMAGE_SIZE / 2,
+                             button.y(), self.IMAGE_SIZE * 2, self.IMAGE_SIZE + 30,
+                             Qt.AlignCenter | Qt.AlignBottom, button.text())
+
     def draw_bot(self, painter):
         painter.setFont(self.__font)
-        painter.drawText(self.__shift * self.__image_size, self.__height - 10,
+        painter.drawText(self.__shift * self.IMAGE_SIZE, self.__height - 10,
                          'Bot difficulty: {}'.format(self.__game.BOT_DIFFICULTIES[self.__game.BOT_DIFFICULTY]))
 
     def draw_signature(self, painter):
@@ -383,8 +397,8 @@ class GameWindow(QMainWindow):
 
     def draw_score(self, painter):
         painter.setFont(self.__font)
-        x = (self.__game.size + self.__shift) * self.__image_size + 10
-        y = self.__shift * self.__image_size + 20
+        x = (self.__game.size + self.__shift) * self.IMAGE_SIZE + 10
+        y = self.__shift * self.IMAGE_SIZE + 20
         painter.drawText(x, y, 'Score:')
         shift = 30
         if not self.__game.bot_active:
@@ -405,7 +419,7 @@ class GameWindow(QMainWindow):
             color = ' ({})'.format(Game.WHITE if self.__game.PLAYER_IS_WHITE else Game.BLACK)
             turn = Game.YOU + "r" if self.__game.is_white_turn == self.__game.PLAYER_IS_WHITE else Game.BOT + "'s"
             text = r"{} turn".format(turn) + (color if turn == Game.YOU + "r" else '')
-        painter.drawText(self.__shift + self.__image_size, 35, text)
+        painter.drawText(self.__shift + self.IMAGE_SIZE, 35, text)
 
     def draw_cells(self, painter):
         for cell in self.__game.game_map:
@@ -416,7 +430,7 @@ class GameWindow(QMainWindow):
             self.draw(checker.image, checker.coordinates, painter)
 
     def draw(self, image, coordinates, painter):
-        image_coordinates = coordinates.to_image_coordinates(self.__image_size, 1)
+        image_coordinates = coordinates.to_image_coordinates(self.IMAGE_SIZE, 1)
         x = image_coordinates.x
         y = image_coordinates.y
-        painter.drawImage(x, y, image.scaled(self.__image_size, self.__image_size))
+        painter.drawImage(x, y, image.scaled(self.IMAGE_SIZE, self.IMAGE_SIZE))

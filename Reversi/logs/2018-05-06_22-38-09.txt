@@ -1,3 +1,0 @@
-22:38:09 Player VS Normal Bot (Board size: 8x8)
-22:38:12 Player's turn	(Black): placed checker at Point(2, 3)
-22:38:13 Bot's turn	(White): placed checker at Point(4, 2)

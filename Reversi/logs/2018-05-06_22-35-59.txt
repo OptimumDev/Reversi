@@ -1,5 +1,0 @@
-22:35:59 Player VS Easy Bot (Board size: 18x18)
-22:36:00 Bot's turn	(Black): placed checker at Point(9, 10)
-22:36:26 Player's turn	(Black): passed
-22:36:27 Bot's turn	(Black): passed
-22:36:27 Player (White) won
