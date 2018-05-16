@@ -171,7 +171,7 @@ class GameWindow(QMainWindow):
         self.move(self.x(), self.y() - 15)
 
         self.setWindowIcon(QIcon('images/icon.png'))
-        self.setWindowTitle('Reversy')
+        self.setWindowTitle('Reversi')
 
         self.__checker_buttons = self.get_checker_buttons()
 
@@ -179,6 +179,7 @@ class GameWindow(QMainWindow):
                                                 (self.__game.size + self.__shift) * self.__image_size + 10,
                                                 (self.__shift + 2) * self.__image_size,
                                                 lambda: self.make_turn(self.__pass_button))
+        self.__pass_button.setIcon(QIcon('images/Hand.png'))
 
         self.__save_button = self.create_button('Save', self.__width - 410, 10, self.save)
 
