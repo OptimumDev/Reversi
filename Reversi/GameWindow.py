@@ -13,113 +13,6 @@ import time
 import os
 
 
-class ChooseModeWindow(QWidget):
-    BUTTON_WIDTH = 250
-    BUTTON_HEIGHT = 50
-    MODE_SHIFT = 100
-    UPPER_SHIFT = 100
-    SIDE_SHIFT = 50
-
-    def __init__(self):
-        super().__init__()
-
-        self.__width = (self.BUTTON_WIDTH + self.SIDE_SHIFT * 2) * 2 + self.MODE_SHIFT
-        self.__height = self.BUTTON_HEIGHT * 2 + self.UPPER_SHIFT * 2
-        self.__font = QFont("times", 20)
-        self.__box_font = QFont("times", 15)
-
-        self.__board_size = 8
-        self.__player_first = True
-        self.__bot_difficulty = 1
-
-        self.initUI()
-        self.show()
-
-    def initUI(self):
-        self.setWindowFlag(Qt.MSWindowsFixedSizeDialogHint)
-        self.resize(self.__width, self.__height)
-        qt_rectangle = self.frameGeometry()
-        center_point = QDesktopWidget().availableGeometry().center()
-        qt_rectangle.moveCenter(center_point)
-        self.move(qt_rectangle.topLeft())
-
-        self.setWindowTitle('Game Settings')
-        self.setWindowIcon(QIcon('images/icon.png'))
-
-        self.__board_size_box = QComboBox(self)
-        self.__board_size_box.setFont(self.__box_font)
-        self.__board_size_box.addItems([str(i) for i in range(4, 17, 2)])
-        self.__board_size_box.setCurrentIndex(2)
-        self.__board_size_box.move(self.__width // 2 + 50, self.UPPER_SHIFT - 40)
-        self.__board_size_box.activated[str].connect(self.board_size_choice)
-
-        self.__pvp_button = QPushButton('Player VS Player', self)
-        self.__pvp_button.setFont(self.__font)
-        self.__pvp_button.setGeometry(self.SIDE_SHIFT + self.MODE_SHIFT, self.UPPER_SHIFT,
-                                      self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
-        self.__pvp_button.clicked.connect(partial(self.run, False))
-
-        self.__pve_button = QPushButton('Player VS Bot', self)
-        self.__pve_button.setFont(self.__font)
-        self.__pve_button.setGeometry(self.SIDE_SHIFT * 2 + self.BUTTON_WIDTH + self.MODE_SHIFT,
-                                      self.UPPER_SHIFT, self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
-        self.__pve_button.clicked.connect(partial(self.run, True))
-
-        self.__player_first_checkbox = QCheckBox("Player go first", self)
-        self.__player_first_checkbox.setFont(self.__font)
-        self.__player_first_checkbox.toggle()
-        self.__player_first_checkbox.move(30 + self.__pve_button.x(), self.__pve_button.y() + self.BUTTON_HEIGHT)
-        self.__player_first_checkbox.stateChanged.connect(self.player_first_change)
-
-        self.__bot_difficulty_box = QComboBox(self)
-        self.__bot_difficulty_box.setFont(self.__box_font)
-        self.__bot_difficulty_box.addItems(['Easy', 'Normal', 'Hard'])
-        self.__bot_difficulty_box.setCurrentIndex(1)
-        self.__bot_difficulty_box.setGeometry(165 + self.__pve_button.x(),
-                                              self.__pve_button.y() + self.BUTTON_HEIGHT + 35, 100, 30)
-        self.__bot_difficulty_box.activated[int].connect(self.bot_difficulty_choice)
-
-        self.__load_button = QPushButton('Load', self)
-        self.__load_button.setFont(self.__font)
-        self.__load_button.setGeometry((self.__width - self.BUTTON_WIDTH) // 2,
-                                       self.UPPER_SHIFT * 2 + self.BUTTON_HEIGHT - 10,
-                                       self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
-        self.__load_button.clicked.connect(self.load)
-
-    def bot_difficulty_choice(self, difficulty):
-        self.__bot_difficulty = difficulty
-
-    def board_size_choice(self, size):
-        self.__board_size = int(size)
-
-    def player_first_change(self):
-        self.__player_first = not self.__player_first
-
-    def load(self):
-        name = QFileDialog.getOpenFileName(self, 'Chose Save File', 'saves/', 'Reversy Save (*.rs)')[0]
-        if name == '':
-            return
-        GameWindow(False, name)
-        self.hide()
-
-    def run(self, bot_active):
-        GameWindow(True, self.__board_size, bot_active, self.__player_first, self.__bot_difficulty)
-        self.hide()
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.begin(self)
-        painter.setFont(self.__font)
-
-        painter.drawText(self.__width // 2 - 85, 30, 'Game Settings')
-        painter.drawText(self.__width // 2 - 95, self.UPPER_SHIFT - 15, 'Board Size:')
-        painter.drawText(10, self.UPPER_SHIFT + 35, 'New Game:')
-        painter.drawText(self.__pvp_button.x() + self.BUTTON_WIDTH + 10, self.UPPER_SHIFT + 35, 'Or')
-        painter.drawText(self.__pve_button.x() - 5, self.__pve_button.y() + self.BUTTON_HEIGHT + 60, 'Bot Difficulty:')
-
-        painter.end()
-
-
 class GameWindow(QMainWindow):
 
     EXIT_CODE_CHANGE_MODE = -123
@@ -145,7 +38,7 @@ class GameWindow(QMainWindow):
             self.__game = Game(args[0], args[1])
         self.__last_player_turn_result = True
 
-        self.__width = (self.__game.size + self.SHIFT) * self.IMAGE_SIZE + 600
+        self.__width = (self.__game.size + self.SHIFT) * self.IMAGE_SIZE + self.IMAGE_SIZE * 12
         self.__height = (self.__game.size + self.SHIFT * 2) * self.IMAGE_SIZE + 20
 
         logs = os.listdir('logs')
@@ -182,13 +75,13 @@ class GameWindow(QMainWindow):
                                                 (self.SHIFT + self.__game.size - 1) * self.IMAGE_SIZE - 25,
                                                 lambda: self.make_turn(self.__pass_button))
 
-        self.__save_button = self.create_button('Save', self.__width - 370, 10, self.save)
+        self.__save_button = self.create_button('Save', self.__width - self.IMAGE_SIZE * 7 - 20, 10, self.save)
 
-        self.__settings_button = self.create_button('Settings', self.__width - 270, 10, self.settings)
+        self.__settings_button = self.create_button('Settings', self.__width - self.IMAGE_SIZE * 5 - 20, 10, self.settings)
 
-        self.__restart_button = self.create_button('Restart', self.__width - 160, 10, lambda: self.restart(True))
+        self.__restart_button = self.create_button('Restart', self.__width - self.IMAGE_SIZE * 3 - 10, 10, lambda: self.restart(True))
 
-        self.__quit_button = self.create_button('Quit', self.__width - 70, 10, lambda: self.quit(True))
+        self.__quit_button = self.create_button('Quit', self.__width - self.IMAGE_SIZE - 20, 10, lambda: self.quit(True))
 
     def get_checker_buttons(self):
         buttons = {}
