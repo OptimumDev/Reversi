@@ -4,7 +4,7 @@
 from functools import partial
 from PyQt5.QtGui import QIcon, QPainter, QFont, QImage
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt
 from Point import Point
 from Game import Game
 from Units import Checker
@@ -170,6 +170,8 @@ class GameWindow(QMainWindow):
         self.set_geometry()
         self.setWindowIcon(self.ICON)
         self.setWindowTitle('Reversi')
+        self.setStyleSheet('background: LightBlue;')
+        # self.setStyleSheet('background-image: url("images/wood.png");')
 
         self.__controls = []
 
@@ -196,7 +198,7 @@ class GameWindow(QMainWindow):
                 coordinates = cell.coordinates.to_image_coordinates(self.IMAGE_SIZE, self.SHIFT)
                 button.setGeometry(coordinates.x, coordinates.y, self.IMAGE_SIZE, self.IMAGE_SIZE)
                 button.clicked.connect(partial(self.make_turn, button))
-                button.setStyleSheet("background: transparent")
+                button.setStyleSheet("background: transparent;")
                 button.hide()
                 buttons[cell.coordinates.to_tuple()] = button
         return buttons
@@ -228,7 +230,9 @@ class GameWindow(QMainWindow):
         return True
 
     def ask_for_save(self):
-        choice = QMessageBox.question(self, 'Save game?',
+        message = QMessageBox()
+        message.move(self.x() + (self.width() - message.width()) / 2, self.y() + (self.height() - message.height()) / 2)
+        choice = message.question(message, 'Save game?',
                                       'This will finish current game\nWould you like to save yor game?',
                                       QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel, QMessageBox.Cancel)
         success = choice != QMessageBox.Cancel
