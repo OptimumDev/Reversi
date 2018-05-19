@@ -298,7 +298,7 @@ class GameWindow(QMainWindow):
         painter.drawText((self.SHIFT + 1) * self.IMAGE_SIZE + 10, self.__height - 10,
                          f'Bot difficulty: {difficulty}')
         painter.drawImage(self.SHIFT * self.IMAGE_SIZE, self.__height - self.IMAGE_SIZE - 10,
-                          QImage(f'images/{difficulty}Bot.png').scaled(self.IMAGE_SIZE, self.IMAGE_SIZE))
+                          QImage(f'images/{difficulty}.png').scaled(self.IMAGE_SIZE, self.IMAGE_SIZE))
 
     def draw_signature(self, painter):
         painter.drawText(self.__width - 125, self.__height - 10, 'Made by Artemiy Izakov')

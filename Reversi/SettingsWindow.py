@@ -7,7 +7,7 @@ from GameWindow import GameWindow
 class SettingsWindow(QWidget):
     BUTTON_WIDTH = 250
     BUTTON_HEIGHT = 50
-    BUTTON_Size = 100
+    BUTTON_SIZE = 100
     MODE_SHIFT = 100
     UPPER_SHIFT = 100
     SIDE_SHIFT = 50
@@ -15,8 +15,8 @@ class SettingsWindow(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.__width = (self.BUTTON_WIDTH + self.SIDE_SHIFT * 2) * 2 + self.MODE_SHIFT
-        self.__height = self.BUTTON_HEIGHT * 2 + self.UPPER_SHIFT * 2
+        self.__width = self.BUTTON_SIZE * 8 + self.SIDE_SHIFT * 5
+        self.__height = self.BUTTON_SIZE * 3 + self.UPPER_SHIFT * 2
         self.__font = QFont("times", 20)
         self.__box_font = QFont("times", 15)
 
@@ -81,7 +81,7 @@ class SettingsWindow(QWidget):
 
     def create_button(self, name, x, y, action):
         button = QPushButton(name, self)
-        button.setGeometry(x, y, self.BUTTON_Size, self.BUTTON_Size)
+        button.setGeometry(x, y, self.BUTTON_SIZE, self.BUTTON_SIZE)
         button.clicked.connect(action)
         button.setStyleSheet("background: transparent; color: transparent;")
         self.__controls.append(button)
@@ -90,33 +90,33 @@ class SettingsWindow(QWidget):
     def starting(self):
         self.__controls = []
         offline = self.create_button("Offline", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0)
-        online = self.create_button("Online", offline.x() + self.BUTTON_Size + self.SIDE_SHIFT, self.UPPER_SHIFT,
+        online = self.create_button("Online", offline.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
                                     lambda _: 0)
 
     def host_join(self):
         self.__controls = []
         host = self.create_button("Host", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0)
-        join = self.create_button("Online", host.x() + self.BUTTON_Size + self.SIDE_SHIFT, self.UPPER_SHIFT,
+        join = self.create_button("Join", host.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
                                   lambda _: 0)
 
     def new_load(self, is_online):
         self.__controls = []
         new = self.create_button("New Game", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0)
-        load = self.create_button("Load", new.x() + self.BUTTON_Size + self.SIDE_SHIFT, self.UPPER_SHIFT,
+        load = self.create_button("Load", new.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
                                   lambda _: 0)
 
     def choose_size(self, is_online, is_bot):
         self.__controls = []
         for i in range(4, 9, 2):
-            button = self.create_button(str(i), self.SIDE_SHIFT + i * self.BUTTON_Size, self.UPPER_SHIFT, lambda _: 0)
+            button = self.create_button(str(i), self.SIDE_SHIFT + (i - 4) * self.BUTTON_SIZE, self.UPPER_SHIFT, lambda _: 0)
         for i in range(10, 17, 2):
-            button = self.create_button(str(i), self.SIDE_SHIFT + i * self.BUTTON_Size,
-                                        self.UPPER_SHIFT + self.BUTTON_Size, lambda _: 0)
+            button = self.create_button(str(i), self.SIDE_SHIFT + (i - 10) * self.BUTTON_SIZE,
+                                        self.UPPER_SHIFT + self.BUTTON_SIZE, lambda _: 0)
 
-    def first(self):
+    def first(self, is_online):
         self.__controls = []
         me = self.create_button("Me", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0)
-        other = self.create_button("Other", me.x() + self.BUTTON_Size + self.SIDE_SHIFT, self.UPPER_SHIFT,
+        other = self.create_button("Other" if is_online else "Bot", me.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
                                    lambda _: 0)
 
     def wait(self):
@@ -126,17 +126,18 @@ class SettingsWindow(QWidget):
         self.__controls = []
 
     def pvp_pve(self):
+        #size
         self.__controls = []
         pvp = self.create_button("Player Vs Player", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0)
-        pve = self.create_button("Player Vs Bot", pvp.x() + self.BUTTON_Size + self.SIDE_SHIFT, self.UPPER_SHIFT,
+        pve = self.create_button("Player Vs Bot", pvp.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
                                  lambda _: 0)
 
     def bot(self):
         self.__controls = []
         easy = self.create_button("Easy", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0)
-        medium = self.create_button("Player Vs Bot", easy.x() + self.BUTTON_Size + self.SIDE_SHIFT, self.UPPER_SHIFT,
+        medium = self.create_button("Medium", easy.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
                                     lambda _: 0)
-        hard = self.create_button("Player Vs Bot", medium.x() + self.BUTTON_Size + self.SIDE_SHIFT, self.UPPER_SHIFT,
+        hard = self.create_button("Hard", medium.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
                                   lambda _: 0)
 
     def bot_difficulty_choice(self, difficulty):
@@ -164,18 +165,20 @@ class SettingsWindow(QWidget):
         painter.begin(self)
         painter.setFont(self.__font)
 
-        painter.drawText(self.__width // 2 - 85, 30, 'Game Settings')
-        painter.drawText(self.__width // 2 - 95, self.UPPER_SHIFT - 15, 'Board Size:')
-        painter.drawText(10, self.UPPER_SHIFT + 35, 'New Game:')
-        painter.drawText(self.__pvp_button.x() + self.BUTTON_WIDTH + 10, self.UPPER_SHIFT + 35, 'Or')
-        painter.drawText(self.__pve_button.x() - 5, self.__pve_button.y() + self.BUTTON_HEIGHT + 60, 'Bot Difficulty:')
+        self.draw_controls(painter)
+
+        # painter.drawText(self.__width // 2 - 85, 30, 'Game Settings')
+        # painter.drawText(self.__width // 2 - 95, self.UPPER_SHIFT - 15, 'Board Size:')
+        # painter.drawText(10, self.UPPER_SHIFT + 35, 'New Game:')
+        # painter.drawText(self.__pvp_button.x() + self.BUTTON_WIDTH + 10, self.UPPER_SHIFT + 35, 'Or')
+        # painter.drawText(self.__pve_button.x() - 5, self.__pve_button.y() + self.BUTTON_HEIGHT + 60, 'Bot Difficulty:')
 
         painter.end()
 
     def draw_controls(self, painter):
         for button in self.__controls:
             painter.drawImage(button.x(), button.y(),
-                              QImage(f'images/{button.text()}.png').scaled(self.IMAGE_SIZE, self.IMAGE_SIZE))
-            painter.drawText(button.x() - self.IMAGE_SIZE / 2,
-                             button.y(), self.IMAGE_SIZE * 2, self.IMAGE_SIZE + 30,
+                              QImage(f'images/{button.text()}.png').scaled(self.BUTTON_SIZE, self.BUTTON_SIZE))
+            painter.drawText(button.x() - self.BUTTON_SIZE / 2,
+                             button.y(), self.BUTTON_SIZE * 2, self.BUTTON_SIZE + 30,
                              Qt.AlignCenter | Qt.AlignBottom, button.text())
