@@ -38,6 +38,7 @@ class SettingsWindow(QWidget):
 
         self.setWindowTitle('Game Settings')
         self.setWindowIcon(QIcon('images/icon.png'))
+        self.setStyleSheet('background: LightBlue;')
 
         self.__board_size_box = QComboBox(self)
         self.__board_size_box.setFont(self.__box_font)
@@ -79,9 +80,9 @@ class SettingsWindow(QWidget):
                                        self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
         self.__load_button.clicked.connect(self.load)
 
-    def create_button(self, name, x, y, action):
+    def create_button(self, name, x, y, action, width = 100, height = 100):
         button = QPushButton(name, self)
-        button.setGeometry(x, y, self.BUTTON_SIZE, self.BUTTON_SIZE)
+        button.setGeometry(x, y, width, height)
         button.clicked.connect(action)
         button.setStyleSheet("background: transparent; color: transparent;")
         self.__controls.append(button)
@@ -128,9 +129,9 @@ class SettingsWindow(QWidget):
     def pvp_pve(self):
         #size
         self.__controls = []
-        pvp = self.create_button("Player Vs Player", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0)
+        pvp = self.create_button("Player Vs Player", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0, 300)
         pve = self.create_button("Player Vs Bot", pvp.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
-                                 lambda _: 0)
+                                 lambda _: 0, 300)
 
     def bot(self):
         self.__controls = []
@@ -178,7 +179,9 @@ class SettingsWindow(QWidget):
     def draw_controls(self, painter):
         for button in self.__controls:
             painter.drawImage(button.x(), button.y(),
-                              QImage(f'images/{button.text()}.png').scaled(self.BUTTON_SIZE, self.BUTTON_SIZE))
-            painter.drawText(button.x() - self.BUTTON_SIZE / 2,
-                             button.y(), self.BUTTON_SIZE * 2, self.BUTTON_SIZE + 30,
-                             Qt.AlignCenter | Qt.AlignBottom, button.text())
+                              QImage(f'images/{button.text()}.png').scaled(button.width(), button.height()))
+            exceptions = [str(i) for i in range(4, 17, 2)]
+            text = "" if button.text() in exceptions else button.text()
+            painter.drawText(button.x() - button.width() / 2,
+                             button.y(), button.width() * 2, button.height() + 30,
+                             Qt.AlignCenter | Qt.AlignBottom, text)
