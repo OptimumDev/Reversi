@@ -4,33 +4,41 @@ from PyQt5.QtCore import Qt
 from functools import partial
 from GameWindow import GameWindow
 
+
 class SettingsWindow(QWidget):
     BUTTON_WIDTH = 250
     BUTTON_HEIGHT = 50
     BUTTON_SIZE = 100
     MODE_SHIFT = 100
+
     UPPER_SHIFT = 100
     SIDE_SHIFT = 50
+    BETWEEN_SHIFT = 10
+    WIDTH = BUTTON_SIZE * 4 + SIDE_SHIFT * 2 + BETWEEN_SHIFT * 3
+    HEIGHT = BUTTON_SIZE * 2 + UPPER_SHIFT * 2 + BETWEEN_SHIFT
+    TWO_BUTTONS_POSITIONS = (SIDE_SHIFT + BETWEEN_SHIFT + BUTTON_SIZE / 2,
+                             WIDTH - SIDE_SHIFT - BETWEEN_SHIFT - BUTTON_SIZE * 3 / 2)
+    ONE_LINE_UPPER_SHIFT = UPPER_SHIFT * 3 / 2
 
     def __init__(self):
         super().__init__()
 
-        self.__width = self.BUTTON_SIZE * 8 + self.SIDE_SHIFT * 5
-        self.__height = self.BUTTON_SIZE * 3 + self.UPPER_SHIFT * 2
         self.__font = QFont("times", 20)
         self.__box_font = QFont("times", 15)
 
         self.__board_size = 8
         self.__player_first = True
         self.__bot_difficulty = 1
+
         self.__controls = []
+        self.__current_title = 'Game Mode'
 
         self.initUI()
         self.show()
 
     def initUI(self):
         self.setWindowFlag(Qt.MSWindowsFixedSizeDialogHint)
-        self.resize(self.__width, self.__height)
+        self.resize(self.WIDTH, self.HEIGHT)
         qt_rectangle = self.frameGeometry()
         center_point = QDesktopWidget().availableGeometry().center()
         qt_rectangle.moveCenter(center_point)
@@ -40,45 +48,47 @@ class SettingsWindow(QWidget):
         self.setWindowIcon(QIcon('images/icon.png'))
         self.setStyleSheet('background: LightBlue;')
 
-        self.__board_size_box = QComboBox(self)
-        self.__board_size_box.setFont(self.__box_font)
-        self.__board_size_box.addItems([str(i) for i in range(4, 17, 2)])
-        self.__board_size_box.setCurrentIndex(2)
-        self.__board_size_box.move(self.__width // 2 + 50, self.UPPER_SHIFT - 40)
-        self.__board_size_box.activated[str].connect(self.board_size_choice)
+        self.starting()
 
-        self.__pvp_button = QPushButton('Player VS Player', self)
-        self.__pvp_button.setFont(self.__font)
-        self.__pvp_button.setGeometry(self.SIDE_SHIFT + self.MODE_SHIFT, self.UPPER_SHIFT,
-                                      self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
-        self.__pvp_button.clicked.connect(partial(self.run, False))
-
-        self.__pve_button = QPushButton('Player VS Bot', self)
-        self.__pve_button.setFont(self.__font)
-        self.__pve_button.setGeometry(self.SIDE_SHIFT * 2 + self.BUTTON_WIDTH + self.MODE_SHIFT,
-                                      self.UPPER_SHIFT, self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
-        self.__pve_button.clicked.connect(partial(self.run, True))
-
-        self.__player_first_checkbox = QCheckBox("Player go first", self)
-        self.__player_first_checkbox.setFont(self.__font)
-        self.__player_first_checkbox.toggle()
-        self.__player_first_checkbox.move(30 + self.__pve_button.x(), self.__pve_button.y() + self.BUTTON_HEIGHT)
-        self.__player_first_checkbox.stateChanged.connect(self.player_first_change)
-
-        self.__bot_difficulty_box = QComboBox(self)
-        self.__bot_difficulty_box.setFont(self.__box_font)
-        self.__bot_difficulty_box.addItems(['Easy', 'Normal', 'Hard'])
-        self.__bot_difficulty_box.setCurrentIndex(1)
-        self.__bot_difficulty_box.setGeometry(165 + self.__pve_button.x(),
-                                              self.__pve_button.y() + self.BUTTON_HEIGHT + 35, 100, 30)
-        self.__bot_difficulty_box.activated[int].connect(self.bot_difficulty_choice)
-
-        self.__load_button = QPushButton('Load', self)
-        self.__load_button.setFont(self.__font)
-        self.__load_button.setGeometry((self.__width - self.BUTTON_WIDTH) // 2,
-                                       self.UPPER_SHIFT * 2 + self.BUTTON_HEIGHT - 10,
-                                       self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
-        self.__load_button.clicked.connect(self.load)
+        # self.__board_size_box = QComboBox(self)
+        # self.__board_size_box.setFont(self.__box_font)
+        # self.__board_size_box.addItems([str(i) for i in range(4, 17, 2)])
+        # self.__board_size_box.setCurrentIndex(2)
+        # self.__board_size_box.move(self.__width // 2 + 50, self.UPPER_SHIFT - 40)
+        # self.__board_size_box.activated[str].connect(self.board_size_choice)
+        #
+        # self.__pvp_button = QPushButton('Player VS Player', self)
+        # self.__pvp_button.setFont(self.__font)
+        # self.__pvp_button.setGeometry(self.SIDE_SHIFT + self.MODE_SHIFT, self.UPPER_SHIFT,
+        #                               self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
+        # self.__pvp_button.clicked.connect(partial(self.run, False))
+        #
+        # self.__pve_button = QPushButton('Player VS Bot', self)
+        # self.__pve_button.setFont(self.__font)
+        # self.__pve_button.setGeometry(self.SIDE_SHIFT * 2 + self.BUTTON_WIDTH + self.MODE_SHIFT,
+        #                               self.UPPER_SHIFT, self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
+        # self.__pve_button.clicked.connect(partial(self.run, True))
+        #
+        # self.__player_first_checkbox = QCheckBox("Player go first", self)
+        # self.__player_first_checkbox.setFont(self.__font)
+        # self.__player_first_checkbox.toggle()
+        # self.__player_first_checkbox.move(30 + self.__pve_button.x(), self.__pve_button.y() + self.BUTTON_HEIGHT)
+        # self.__player_first_checkbox.stateChanged.connect(self.player_first_change)
+        #
+        # self.__bot_difficulty_box = QComboBox(self)
+        # self.__bot_difficulty_box.setFont(self.__box_font)
+        # self.__bot_difficulty_box.addItems(['Easy', 'Normal', 'Hard'])
+        # self.__bot_difficulty_box.setCurrentIndex(1)
+        # self.__bot_difficulty_box.setGeometry(165 + self.__pve_button.x(),
+        #                                       self.__pve_button.y() + self.BUTTON_HEIGHT + 35, 100, 30)
+        # self.__bot_difficulty_box.activated[int].connect(self.bot_difficulty_choice)
+        #
+        # self.__load_button = QPushButton('Load', self)
+        # self.__load_button.setFont(self.__font)
+        # self.__load_button.setGeometry((self.__width - self.BUTTON_WIDTH) // 2,
+        #                                self.UPPER_SHIFT * 2 + self.BUTTON_HEIGHT - 10,
+        #                                self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
+        # self.__load_button.clicked.connect(self.load)
 
     def create_button(self, name, x, y, action, width = 100, height = 100):
         button = QPushButton(name, self)
@@ -90,9 +100,8 @@ class SettingsWindow(QWidget):
 
     def starting(self):
         self.__controls = []
-        offline = self.create_button("Offline", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0)
-        online = self.create_button("Online", offline.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
-                                    lambda _: 0)
+        offline = self.create_button("Offline", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, lambda _: 0)
+        online = self.create_button("Online", self.TWO_BUTTONS_POSITIONS[1], offline.y(), lambda _: 0)
 
     def host_join(self):
         self.__controls = []
@@ -109,10 +118,11 @@ class SettingsWindow(QWidget):
     def choose_size(self, is_online, is_bot):
         self.__controls = []
         for i in range(4, 9, 2):
-            button = self.create_button(str(i), self.SIDE_SHIFT + (i - 4) * self.BUTTON_SIZE, self.UPPER_SHIFT, lambda _: 0)
+            button = self.create_button(str(i), self.BUTTON_SIZE / 2 + self.SIDE_SHIFT + (i - 4) / 2 * (self.BUTTON_SIZE + self.BETWEEN_SHIFT * 3 / 2),
+                                        self.UPPER_SHIFT, lambda _: 0)
         for i in range(10, 17, 2):
-            button = self.create_button(str(i), self.SIDE_SHIFT + (i - 10) * self.BUTTON_SIZE,
-                                        self.UPPER_SHIFT + self.BUTTON_SIZE, lambda _: 0)
+            button = self.create_button(str(i), self.SIDE_SHIFT + (i - 10) / 2  * (self.BUTTON_SIZE + self.BETWEEN_SHIFT),
+                                        self.UPPER_SHIFT + self.BUTTON_SIZE + self.BETWEEN_SHIFT, lambda _: 0)
 
     def first(self, is_online):
         self.__controls = []
@@ -166,6 +176,7 @@ class SettingsWindow(QWidget):
         painter.begin(self)
         painter.setFont(self.__font)
 
+        self.draw_title(painter)
         self.draw_controls(painter)
 
         # painter.drawText(self.__width // 2 - 85, 30, 'Game Settings')
@@ -175,6 +186,9 @@ class SettingsWindow(QWidget):
         # painter.drawText(self.__pve_button.x() - 5, self.__pve_button.y() + self.BUTTON_HEIGHT + 60, 'Bot Difficulty:')
 
         painter.end()
+
+    def draw_title(self, painter):
+        painter.drawText(0, 0, self.WIDTH, self.UPPER_SHIFT, Qt.AlignCenter | Qt.AlignVCenter, self.__current_title)
 
     def draw_controls(self, painter):
         for button in self.__controls:
