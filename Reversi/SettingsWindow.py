@@ -13,7 +13,7 @@ class SettingsWindow(QWidget):
 
     UPPER_SHIFT = 100
     SIDE_SHIFT = 50
-    BETWEEN_SHIFT = 10
+    BETWEEN_SHIFT = 40
     WIDTH = BUTTON_SIZE * 4 + SIDE_SHIFT * 2 + BETWEEN_SHIFT * 3
     HEIGHT = BUTTON_SIZE * 2 + UPPER_SHIFT * 2 + BETWEEN_SHIFT
     TWO_BUTTONS_POSITIONS = (SIDE_SHIFT + BETWEEN_SHIFT + BUTTON_SIZE / 2,
@@ -48,47 +48,7 @@ class SettingsWindow(QWidget):
         self.setWindowIcon(QIcon('images/icon.png'))
         self.setStyleSheet('background: LightBlue;')
 
-        self.starting()
-
-        # self.__board_size_box = QComboBox(self)
-        # self.__board_size_box.setFont(self.__box_font)
-        # self.__board_size_box.addItems([str(i) for i in range(4, 17, 2)])
-        # self.__board_size_box.setCurrentIndex(2)
-        # self.__board_size_box.move(self.__width // 2 + 50, self.UPPER_SHIFT - 40)
-        # self.__board_size_box.activated[str].connect(self.board_size_choice)
-        #
-        # self.__pvp_button = QPushButton('Player VS Player', self)
-        # self.__pvp_button.setFont(self.__font)
-        # self.__pvp_button.setGeometry(self.SIDE_SHIFT + self.MODE_SHIFT, self.UPPER_SHIFT,
-        #                               self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
-        # self.__pvp_button.clicked.connect(partial(self.run, False))
-        #
-        # self.__pve_button = QPushButton('Player VS Bot', self)
-        # self.__pve_button.setFont(self.__font)
-        # self.__pve_button.setGeometry(self.SIDE_SHIFT * 2 + self.BUTTON_WIDTH + self.MODE_SHIFT,
-        #                               self.UPPER_SHIFT, self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
-        # self.__pve_button.clicked.connect(partial(self.run, True))
-        #
-        # self.__player_first_checkbox = QCheckBox("Player go first", self)
-        # self.__player_first_checkbox.setFont(self.__font)
-        # self.__player_first_checkbox.toggle()
-        # self.__player_first_checkbox.move(30 + self.__pve_button.x(), self.__pve_button.y() + self.BUTTON_HEIGHT)
-        # self.__player_first_checkbox.stateChanged.connect(self.player_first_change)
-        #
-        # self.__bot_difficulty_box = QComboBox(self)
-        # self.__bot_difficulty_box.setFont(self.__box_font)
-        # self.__bot_difficulty_box.addItems(['Easy', 'Normal', 'Hard'])
-        # self.__bot_difficulty_box.setCurrentIndex(1)
-        # self.__bot_difficulty_box.setGeometry(165 + self.__pve_button.x(),
-        #                                       self.__pve_button.y() + self.BUTTON_HEIGHT + 35, 100, 30)
-        # self.__bot_difficulty_box.activated[int].connect(self.bot_difficulty_choice)
-        #
-        # self.__load_button = QPushButton('Load', self)
-        # self.__load_button.setFont(self.__font)
-        # self.__load_button.setGeometry((self.__width - self.BUTTON_WIDTH) // 2,
-        #                                self.UPPER_SHIFT * 2 + self.BUTTON_HEIGHT - 10,
-        #                                self.BUTTON_WIDTH, self.BUTTON_HEIGHT)
-        # self.__load_button.clicked.connect(self.load)
+        start = self.create_button("123", 0, 0, partial(self.run, True))
 
     def create_button(self, name, x, y, action, width = 100, height = 100):
         button = QPushButton(name, self)
@@ -105,15 +65,13 @@ class SettingsWindow(QWidget):
 
     def host_join(self):
         self.__controls = []
-        host = self.create_button("Host", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0)
-        join = self.create_button("Join", host.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
-                                  lambda _: 0)
+        host = self.create_button("Host", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, lambda _: 0)
+        join = self.create_button("Join", self.TWO_BUTTONS_POSITIONS[1], host.y(), lambda _: 0)
 
     def new_load(self, is_online):
         self.__controls = []
-        new = self.create_button("New Game", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0)
-        load = self.create_button("Load", new.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
-                                  lambda _: 0)
+        new = self.create_button("New Game", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, lambda _: 0)
+        load = self.create_button("Load", self.TWO_BUTTONS_POSITIONS[1], new.y(), lambda _: 0)
 
     def choose_size(self, is_online, is_bot):
         self.__controls = []
@@ -139,17 +97,18 @@ class SettingsWindow(QWidget):
     def pvp_pve(self):
         #size
         self.__controls = []
-        pvp = self.create_button("Player Vs Player", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0, 300)
-        pve = self.create_button("Player Vs Bot", pvp.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
-                                 lambda _: 0, 300)
+        x = (self.WIDTH - 300) / 2
+        pvp = self.create_button("Player Vs Player", x, self.UPPER_SHIFT, lambda _: 0, 300)
+        pve = self.create_button("Player Vs Bot", x, pvp.y() + self.BETWEEN_SHIFT + self.BUTTON_SIZE, lambda _: 0, 300)
 
     def bot(self):
         self.__controls = []
-        easy = self.create_button("Easy", self.SIDE_SHIFT, self.UPPER_SHIFT, lambda _: 0)
-        medium = self.create_button("Medium", easy.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
-                                    lambda _: 0)
-        hard = self.create_button("Hard", medium.x() + self.BUTTON_SIZE + self.SIDE_SHIFT, self.UPPER_SHIFT,
-                                  lambda _: 0)
+        easy = self.create_button("Easy", self.BUTTON_SIZE / 2 + self.SIDE_SHIFT,
+                                  self.ONE_LINE_UPPER_SHIFT, lambda _: 0)
+        medium = self.create_button("Medium", self.BUTTON_SIZE * 3 / 2 + self.SIDE_SHIFT + self.BETWEEN_SHIFT * 3 / 2,
+                                    self.ONE_LINE_UPPER_SHIFT, lambda _: 0)
+        hard = self.create_button("Hard", self.BUTTON_SIZE * 5 / 2 + self.SIDE_SHIFT + self.BETWEEN_SHIFT * 3,
+                                  self.ONE_LINE_UPPER_SHIFT, lambda _: 0)
 
     def bot_difficulty_choice(self, difficulty):
         self.__bot_difficulty = difficulty
