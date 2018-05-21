@@ -80,13 +80,14 @@ class SettingsWindow(QWidget):
     def host_join(self):
         self.set_up()
         self.__current_title = 'Host or Join?'
-        host = self.create_button("Host", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, self.choose_size)
+        host = self.create_button("Host", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, self.new_load)
         join = self.create_button("Join", self.TWO_BUTTONS_POSITIONS[1], host.y(), self.ip)
 
     def new_load(self):
         self.set_up()
         self.__current_title = 'New or Load?'
-        new = self.create_button("New Game", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, self.pvp_pve)
+        new = self.create_button("New Game", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT,
+                                 self.choose_size if self.__is_online else self.pvp_pve)
         load = self.create_button("Load", self.TWO_BUTTONS_POSITIONS[1], new.y(), self.load)
         load.show()
 
@@ -149,12 +150,16 @@ class SettingsWindow(QWidget):
                            300, 50)
         address.setStyleSheet('background: white;')
         address.setFont(self.__font)
+        address.textChanged[str].connect(self.change_ip)
         address.show()
         enter = self.create_button('Enter', address.x(), self.UPPER_SHIFT + self.BUTTON_SIZE + self.BETWEEN_SHIFT,
-                                   lambda _: 0, 300)
+                                   self.enter_ip, 300)
 
-    def enter_ip(self, address):
-        self.__ip = address
+    def change_ip(self, text):
+        self.__ip = text
+
+    def enter_ip(self,):
+        pass
 
     def pvp_pve(self):
         self.set_up()
@@ -179,7 +184,8 @@ class SettingsWindow(QWidget):
         self.choose_size()
 
     def load(self):
-        name = QFileDialog.getOpenFileName(self, 'Chose Save File', 'saves/', 'Reversy Save (*.rs)')[0]
+        folder = 'online' if self.__is_online else 'offline'
+        name = QFileDialog.getOpenFileName(self, 'Chose Save File', f'saves/{folder}/', 'Save Files (*.save)')[0]
         if name == '':
             return
         GameWindow(False, name)
