@@ -133,11 +133,11 @@ class SettingsWindow(QWidget):
 
     def wait(self):
         self.set_up()
-        self.__current_title = "Waiting For Second Player To Connect\n' \
-                               '(Not ready yet, but this Puppy is amazing, isn't it?)"
+        self.__current_title = "Waiting For Second Player To Connect\n" \
+                               "(Not ready yet, but this Puppy is amazing, isn't it?)"
         layout = QVBoxLayout()
         label = QLabel()
-        corgi = QMovie('images/SwimmingCorgi.gif')
+        corgi = QMovie('images/BigCorgi.gif')
         corgi.setScaledSize(QSize(self.HEIGHT - self.UPPER_SHIFT, self.HEIGHT - self.UPPER_SHIFT))
         corgi.start()
         label.setMovie(corgi)
