@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 from PyQt5.QtGui import QIcon, QPainter, QFont, QImage, QMovie
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QSize
@@ -9,7 +12,7 @@ class SettingsWindow(QWidget):
     BUTTON_SIZE = 100
     UPPER_SHIFT = 100
     SIDE_SHIFT = 50
-    BETWEEN_SHIFT = 40
+    BETWEEN_SHIFT = 50
     WIDTH = BUTTON_SIZE * 4 + SIDE_SHIFT * 2 + BETWEEN_SHIFT * 3
     HEIGHT = BUTTON_SIZE * 2 + UPPER_SHIFT * 2 + BETWEEN_SHIFT
     TWO_BUTTONS_POSITIONS = (SIDE_SHIFT + BETWEEN_SHIFT + BUTTON_SIZE / 2,
@@ -118,7 +121,7 @@ class SettingsWindow(QWidget):
         self.__controls = []
         me = self.create_button("Me", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT,
                                 partial(self.make_first, True))
-        other = self.create_button("Other" if self.__is_online else "Bot", self.TWO_BUTTONS_POSITIONS[1], me.y(),
+        other = self.create_button("Second Player" if self.__is_online else "Bot", self.TWO_BUTTONS_POSITIONS[1], me.y(),
                                    partial(self.make_first, False))
 
     def make_first(self, me_first):
@@ -146,8 +149,7 @@ class SettingsWindow(QWidget):
         self.set_up()
         self.__current_title = 'Enter Host IP\n(Not ready yet) '
         address = QLineEdit(self)
-        address.setGeometry((self.WIDTH - 300) / 2, self.UPPER_SHIFT + self.BUTTON_SIZE- self.BETWEEN_SHIFT,
-                           300, 50)
+        address.setGeometry((self.WIDTH - 300) / 2, self.UPPER_SHIFT + self.BUTTON_SIZE- self.BETWEEN_SHIFT, 300, 50)
         address.setStyleSheet('background: white;')
         address.setFont(self.__font)
         address.textChanged[str].connect(self.change_ip)
@@ -210,10 +212,8 @@ class SettingsWindow(QWidget):
 
     def draw_controls(self, painter):
         for button in self.__controls:
-            image = 'Online' if button.text() == 'Join' else button.text()
-            image = 'Offline' if button.text() == 'Host' else image
             painter.drawImage(button.x(), button.y(),
-                              QImage(f'images/{image}.png').scaled(button.width(), button.height()))
+                              QImage(f'images/{button.text()}.png').scaled(button.width(), button.height()))
             exceptions = [str(i) for i in range(4, 17, 2)] + ['Enter']
             text = "" if button.text() in exceptions else button.text()
             painter.drawText(button.x() - button.width() / 2,
