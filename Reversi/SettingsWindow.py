@@ -1,16 +1,12 @@
-from PyQt5.QtGui import QIcon, QPainter, QFont, QImage
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon, QPainter, QFont, QImage, QMovie
+from PyQt5.QtWidgets import QWidget, QPushButton, QDesktopWidget, QLabel, QVBoxLayout
+from PyQt5.QtCore import Qt, QSize
 from functools import partial
 from GameWindow import GameWindow
 
 
 class SettingsWindow(QWidget):
-    BUTTON_WIDTH = 250
-    BUTTON_HEIGHT = 50
     BUTTON_SIZE = 100
-    MODE_SHIFT = 100
-
     UPPER_SHIFT = 100
     SIDE_SHIFT = 50
     BETWEEN_SHIFT = 40
@@ -48,7 +44,7 @@ class SettingsWindow(QWidget):
         self.setWindowIcon(QIcon('images/icon.png'))
         self.setStyleSheet('background: LightBlue;')
 
-        self.first(False)
+        self.wait()
 
         # self.create_button("123", 0, 0, partial(self.run, True))
 
@@ -96,10 +92,25 @@ class SettingsWindow(QWidget):
                                    lambda _: 0)
 
     def wait(self):
+        self.__current_title = 'Waiting For Second Player To Connect'
         self.__controls = []
+        layout = QVBoxLayout()
+        label = QLabel()
+        corgi = QMovie('images/swimmingCorgi.gif')
+        corgi.setScaledSize(QSize(self.HEIGHT - self.UPPER_SHIFT, self.HEIGHT - self.UPPER_SHIFT))
+        corgi.start()
+        label.setMovie(corgi)
+        layout.addWidget(label)
+        layout.setAlignment(Qt.AlignBottom | Qt.AlignCenter)
+        self.setLayout(layout)
+
 
     def ip(self):
+        self.__current_title = 'Enter Host IP'
         self.__controls = []
+        enter = self.create_button('Enter', (self.WIDTH - 300) / 2,
+                                   self.UPPER_SHIFT + self.BUTTON_SIZE + self.BETWEEN_SHIFT, lambda _: 0,
+                                   300, self.BUTTON_SIZE)
 
     def pvp_pve(self):
         self.__current_title = 'Choose Game Mode'
@@ -146,12 +157,6 @@ class SettingsWindow(QWidget):
         self.draw_title(painter)
         self.draw_controls(painter)
 
-        # painter.drawText(self.__width // 2 - 85, 30, 'Game Settings')
-        # painter.drawText(self.__width // 2 - 95, self.UPPER_SHIFT - 15, 'Board Size:')
-        # painter.drawText(10, self.UPPER_SHIFT + 35, 'New Game:')
-        # painter.drawText(self.__pvp_button.x() + self.BUTTON_WIDTH + 10, self.UPPER_SHIFT + 35, 'Or')
-        # painter.drawText(self.__pve_button.x() - 5, self.__pve_button.y() + self.BUTTON_HEIGHT + 60, 'Bot Difficulty:')
-
         painter.end()
 
     def draw_title(self, painter):
@@ -159,9 +164,13 @@ class SettingsWindow(QWidget):
 
     def draw_controls(self, painter):
         for button in self.__controls:
+            if button.text() == "Enter":
+                a = 1
+            image = 'Online' if button.text() == 'Join' else button.text()
+            image = 'Offline' if button.text() == 'Host' else image
             painter.drawImage(button.x(), button.y(),
-                              QImage(f'images/{button.text()}.png').scaled(button.width(), button.height()))
-            exceptions = [str(i) for i in range(4, 17, 2)]
+                              QImage(f'images/{image}.png').scaled(button.width(), button.height()))
+            exceptions = [str(i) for i in range(4, 17, 2)] + ['Enter']
             text = "" if button.text() in exceptions else button.text()
             painter.drawText(button.x() - button.width() / 2,
                              button.y(), button.width() * 2, button.height() + 30,
