@@ -21,8 +21,8 @@ class Unit:
 
 class Cell(Unit):
 
-    NORMAL = QImage('images/cell.png')
-    HIGHLIGHTED = QImage('images/highlightedCell.png')
+    NORMAL = QImage('images/Cell.png')
+    HIGHLIGHTED = QImage('images/HighlightedCell.png')
 
     def __init__(self, coordinates):
         super().__init__(coordinates, self.NORMAL)
@@ -36,8 +36,8 @@ class Cell(Unit):
 
 class Checker(Unit):
 
-    WHITE = QImage('images/whiteChecker.png')
-    BLACK = QImage('images/blackChecker.png')
+    WHITE = QImage('images/WhiteChecker.png')
+    BLACK = QImage('images/BlackChecker.png')
 
     def __init__(self, coordinates, is_white):
         super().__init__(coordinates, self.WHITE if is_white else self.BLACK)

@@ -24,7 +24,7 @@ class GameWindow(QMainWindow):
     def __init__(self, *args):
         super().__init__()
 
-        self.ICON = QIcon('images/icon.png')
+        self.ICON = QIcon('images/Icon.png')
 
         if len(args) < 2:
             raise ValueError
