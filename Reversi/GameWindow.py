@@ -79,9 +79,9 @@ class GameWindow(QMainWindow):
 
         self.__settings_button = self.create_button('Settings', self.__width - self.IMAGE_SIZE * 5 - 20, 10, self.settings)
 
-        self.__restart_button = self.create_button('Restart', self.__width - self.IMAGE_SIZE * 3 - 10, 10, lambda: self.restart(True))
+        self.__restart_button = self.create_button('Restart', self.__width - self.IMAGE_SIZE * 3 - 10, 10, partial(self.restart, True))
 
-        self.__quit_button = self.create_button('Quit', self.__width - self.IMAGE_SIZE - 20, 10, lambda: self.quit(True))
+        self.__quit_button = self.create_button('Quit', self.__width - self.IMAGE_SIZE - 20, 10, partial(self.quit, True))
 
     def get_checker_buttons(self):
         buttons = {}
