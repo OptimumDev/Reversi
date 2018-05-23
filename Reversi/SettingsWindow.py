@@ -60,6 +60,9 @@ class SettingsWindow(QWidget):
         self.__controls.append(button)
         return button
 
+    def create_back_button(self):
+        return self.create_button('Back', 0, 0, lambda: 0, self.BUTTON_SIZE, 30)
+
     def set_up(self):
         self.update()
         for button in self.__controls:
@@ -71,6 +74,7 @@ class SettingsWindow(QWidget):
         self.__current_title = 'Choose Game Mode'
         offline = self.create_button("Offline", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, self.offline)
         online = self.create_button("Online", self.TWO_BUTTONS_POSITIONS[1], offline.y(), self.online)
+        back = self.create_back_button()
 
     def offline(self):
         self.__is_online = False
@@ -85,6 +89,7 @@ class SettingsWindow(QWidget):
         self.__current_title = 'Host or Join?'
         host = self.create_button("Host", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, self.new_load)
         join = self.create_button("Join", self.TWO_BUTTONS_POSITIONS[1], host.y(), self.ip)
+        back = self.create_back_button()
 
     def new_load(self):
         self.set_up()
@@ -92,7 +97,7 @@ class SettingsWindow(QWidget):
         new = self.create_button("New Game", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT,
                                  self.choose_size if self.__is_online else self.pvp_pve)
         load = self.create_button("Load", self.TWO_BUTTONS_POSITIONS[1], new.y(), self.load)
-        load.show()
+        back = self.create_back_button()
 
     def choose_size(self):
         self.set_up()
@@ -107,6 +112,7 @@ class SettingsWindow(QWidget):
                                         self.SIDE_SHIFT + (i - 10) / 2 * (self.BUTTON_SIZE + self.BETWEEN_SHIFT),
                                         self.UPPER_SHIFT + self.BUTTON_SIZE + self.BETWEEN_SHIFT,
                                         partial(self.change_size, i))
+        back = self.create_back_button()
 
     def change_size(self, size):
         self.__board_size = size
@@ -123,6 +129,7 @@ class SettingsWindow(QWidget):
                                 partial(self.make_first, True))
         other = self.create_button("Second Player" if self.__is_online else "Bot", self.TWO_BUTTONS_POSITIONS[1], me.y(),
                                    partial(self.make_first, False))
+        back = self.create_back_button()
 
     def make_first(self, me_first):
         self.__is_player_first = me_first
@@ -144,6 +151,7 @@ class SettingsWindow(QWidget):
         layout.addWidget(label)
         layout.setAlignment(Qt.AlignBottom | Qt.AlignCenter)
         self.setLayout(layout)
+        back = self.create_back_button()
 
     def ip(self):
         self.set_up()
@@ -156,6 +164,7 @@ class SettingsWindow(QWidget):
         address.show()
         enter = self.create_button('Enter', address.x(), self.UPPER_SHIFT + self.BUTTON_SIZE + self.BETWEEN_SHIFT,
                                    self.enter_ip, 300)
+        back = self.create_back_button()
 
     def change_ip(self, text):
         self.__ip = text
@@ -169,6 +178,7 @@ class SettingsWindow(QWidget):
         x = (self.WIDTH - 300) / 2
         pvp = self.create_button("Player Vs Player", x, self.UPPER_SHIFT, self.choose_size, 300)
         pve = self.create_button("Player Vs Bot", x, pvp.y() + self.BETWEEN_SHIFT + self.BUTTON_SIZE, self.bot, 300)
+        back = self.create_back_button()
 
     def bot(self):
         self.set_up()
@@ -179,6 +189,7 @@ class SettingsWindow(QWidget):
                                     self.ONE_LINE_UPPER_SHIFT, partial(self.make_bot, 1))
         hard = self.create_button("Hard", self.BUTTON_SIZE * 5 / 2 + self.SIDE_SHIFT + self.BETWEEN_SHIFT * 3,
                                   self.ONE_LINE_UPPER_SHIFT, partial(self.make_bot, 2))
+        back = self.create_back_button()
 
     def make_bot(self, difficulty):
         self.__is_bot_active = True
@@ -214,7 +225,7 @@ class SettingsWindow(QWidget):
         for button in self.__controls:
             painter.drawImage(button.x(), button.y(),
                               QImage(f'images/{button.text()}.png').scaled(button.width(), button.height()))
-            exceptions = [str(i) for i in range(4, 17, 2)] + ['Enter']
+            exceptions = ['Enter']
             text = "" if button.text() in exceptions else button.text()
             painter.drawText(button.x() - button.width() / 2,
                              button.y(), button.width() * 2, button.height() + 30,
