@@ -51,7 +51,7 @@ class SettingsWindow(QWidget):
 
         self.starting()
 
-    def create_button(self, name, x, y, action, width = 100, height = 100):
+    def create_button(self, name, x, y, action, width=100, height=100):
         button = QPushButton(name, self)
         button.setGeometry(x, y, width, height)
         button.clicked.connect(action)
@@ -60,9 +60,9 @@ class SettingsWindow(QWidget):
         self.__controls.append(button)
         return button
 
-    def create_back_button(self):
+    def create_back_button(self, action):
         return self.create_button('Back', self.WIDTH - self.BUTTON_SIZE - 5, self.HEIGHT - 60,
-                                  lambda: 0, self.BUTTON_SIZE, 30)
+                                  action, self.BUTTON_SIZE, 30)
 
     def set_up(self):
         self.update()
@@ -75,7 +75,6 @@ class SettingsWindow(QWidget):
         self.__current_title = 'Choose Game Mode'
         offline = self.create_button("Offline", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, self.offline)
         online = self.create_button("Online", self.TWO_BUTTONS_POSITIONS[1], offline.y(), self.online)
-        back = self.create_back_button()
 
     def offline(self):
         self.__is_online = False
@@ -90,7 +89,7 @@ class SettingsWindow(QWidget):
         self.__current_title = 'Host or Join?'
         host = self.create_button("Host", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, self.new_load)
         join = self.create_button("Join", self.TWO_BUTTONS_POSITIONS[1], host.y(), self.ip)
-        back = self.create_back_button()
+        back = self.create_back_button(self.starting)
 
     def new_load(self):
         self.set_up()
@@ -98,7 +97,7 @@ class SettingsWindow(QWidget):
         new = self.create_button("New Game", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT,
                                  self.choose_size if self.__is_online else self.pvp_pve)
         load = self.create_button("Load", self.TWO_BUTTONS_POSITIONS[1], new.y(), self.load)
-        back = self.create_back_button()
+        back = self.create_back_button(self.host_join if self.__is_online else self.starting)
 
     def choose_size(self):
         self.set_up()
@@ -113,7 +112,7 @@ class SettingsWindow(QWidget):
                                         self.SIDE_SHIFT + (i - 10) / 2 * (self.BUTTON_SIZE + self.BETWEEN_SHIFT),
                                         self.UPPER_SHIFT + self.BUTTON_SIZE + self.BETWEEN_SHIFT,
                                         partial(self.change_size, i))
-        back = self.create_back_button()
+        back = self.create_back_button(self.new_load if self.__is_online else self.pvp_pve)
 
     def change_size(self, size):
         self.__board_size = size
@@ -123,14 +122,14 @@ class SettingsWindow(QWidget):
             self.run()
 
     def first(self):
-        self.update()
+        self.set_up()
         self.__current_title = 'Who Will Be The First'
         self.__controls = []
         me = self.create_button("Me", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT,
                                 partial(self.make_first, True))
         other = self.create_button("Second Player" if self.__is_online else "Bot", self.TWO_BUTTONS_POSITIONS[1], me.y(),
                                    partial(self.make_first, False))
-        back = self.create_back_button()
+        back = self.create_back_button(self.choose_size)
 
     def make_first(self, me_first):
         self.__is_player_first = me_first
@@ -143,16 +142,19 @@ class SettingsWindow(QWidget):
         self.set_up()
         self.__current_title = "Waiting For Second Player To Connect\n" \
                                "(Not ready yet, but this Puppy is amazing, isn't it?)"
-        layout = QVBoxLayout()
-        label = QLabel()
+        label = QLabel(self)
         corgi = QMovie('images/BigCorgi.gif')
-        corgi.setScaledSize(QSize(self.HEIGHT - self.UPPER_SHIFT, self.HEIGHT - self.UPPER_SHIFT))
+        size = self.HEIGHT - self.UPPER_SHIFT
+        corgi.setScaledSize(QSize(size, size))
         corgi.start()
         label.setMovie(corgi)
-        layout.addWidget(label)
-        layout.setAlignment(Qt.AlignBottom | Qt.AlignCenter)
-        self.setLayout(layout)
-        back = self.create_back_button()
+        label.move((self.WIDTH - size) / 2, (self.HEIGHT - size))
+        label.show()
+
+        def back_function():
+            label.hide()
+            self.first()
+        back = self.create_back_button(back_function)
 
     def ip(self):
         self.set_up()
@@ -165,7 +167,11 @@ class SettingsWindow(QWidget):
         address.show()
         enter = self.create_button('Enter', address.x(), self.UPPER_SHIFT + self.BUTTON_SIZE + self.BETWEEN_SHIFT,
                                    self.enter_ip, 300)
-        back = self.create_back_button()
+
+        def back_function():
+            address.hide()
+            self.host_join()
+        back = self.create_back_button(back_function)
 
     def change_ip(self, text):
         self.__ip = text
@@ -179,7 +185,7 @@ class SettingsWindow(QWidget):
         x = (self.WIDTH - 300) / 2
         pvp = self.create_button("Player Vs Player", x, self.UPPER_SHIFT, self.choose_size, 300)
         pve = self.create_button("Player Vs Bot", x, pvp.y() + self.BETWEEN_SHIFT + self.BUTTON_SIZE, self.bot, 300)
-        back = self.create_back_button()
+        back = self.create_back_button(self.new_load)
 
     def bot(self):
         self.set_up()
@@ -190,7 +196,7 @@ class SettingsWindow(QWidget):
                                     self.ONE_LINE_UPPER_SHIFT, partial(self.make_bot, 1))
         hard = self.create_button("Hard", self.BUTTON_SIZE * 5 / 2 + self.SIDE_SHIFT + self.BETWEEN_SHIFT * 3,
                                   self.ONE_LINE_UPPER_SHIFT, partial(self.make_bot, 2))
-        back = self.create_back_button()
+        back = self.create_back_button(self.pvp_pve)
 
     def make_bot(self, difficulty):
         self.__is_bot_active = True
