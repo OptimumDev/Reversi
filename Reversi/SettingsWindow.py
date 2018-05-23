@@ -61,7 +61,8 @@ class SettingsWindow(QWidget):
         return button
 
     def create_back_button(self):
-        return self.create_button('Back', 0, 0, lambda: 0, self.BUTTON_SIZE, 30)
+        return self.create_button('Back', self.WIDTH - self.BUTTON_SIZE - 5, self.HEIGHT - 60,
+                                  lambda: 0, self.BUTTON_SIZE, 30)
 
     def set_up(self):
         self.update()
