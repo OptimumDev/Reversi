@@ -4,13 +4,67 @@
 from functools import partial
 from PyQt5.QtGui import QIcon, QPainter, QFont, QImage
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QThread
 from Point import Point
 from Game import Game
 from Units import Checker
 from datetime import datetime
 import time
 import os
+
+
+class BotThread(QThread):
+
+    def __init__(self, game_window, game, pass_button, button):
+        super().__init__()
+        self.daemon = True
+        self.__game_window = game_window
+        self.__game = game
+        self.__button = button
+        self.__pass_button = pass_button
+
+    def player_turn(self):
+        coordinates = Point(self.__button.x(), self.__button.y()).to_cell_coordinates(GameWindow.IMAGE_SIZE,
+                                                                                      GameWindow.SHIFT)
+        color = Game.WHITE if self.__game.is_white_turn else Game.BLACK
+        if self.__button == self.__pass_button:
+            self.__game_window.log(f"Player's turn\t({color}): passed")
+            self.__game.pass_turn()
+            return False
+        self.__game_window.log(f"Player's turn\t({color}): placed checker at {coordinates}")
+        self.__game.make_turn(coordinates)
+        self.__game_window.remove_button(coordinates)
+        return True
+
+    def bot_turn(self):
+        time.sleep(GameWindow.BOT_SPEED)
+        bot_checker_coordinates = self.__game.bot_turn()
+        success = bot_checker_coordinates is not None
+        if success:
+            self.__game_window.remove_button(bot_checker_coordinates)
+            log_message = f'placed checker at {bot_checker_coordinates}'
+        else:
+            log_message = 'passed'
+        bot_color = Game.WHITE if self.__game.BOT_IS_WHITE else Game.BLACK
+        self.__game_window.log(f"Bot's turn\t({bot_color}): {log_message}")
+        return success
+
+    def run(self):
+        player_turn = self.player_turn()
+        self.__game_window.hide_buttons()
+        if self.__game.is_finished:
+            self.__game_window.game_over()
+            return
+        bot_turn = True
+        if self.__game.bot_active:
+            bot_turn = self.bot_turn()
+        # if self.__game.is_finished or (not player_turn and not bot_turn) or \
+        #         (not self.__game.bot_active and not player_turn and not self.__game_window.__last_player_turn_result):
+        #     self.__game_window.game_over()
+        #     return
+        # self.__game_window.__last_player_turn_result = player_turn
+        self.__game_window.highlight_buttons()
+        self.__game_window.update()
 
 
 class GameWindow(QMainWindow):
@@ -206,24 +260,34 @@ class GameWindow(QMainWindow):
             self.quit(False)
 
     def make_turn(self, button):
-        player_turn = self.player_turn(button)
-        self.hide_buttons()
-        if self.__game.is_finished:
-            self.game_over()
-            return
-        bot_turn = True
-        if self.__game.bot_active:
-            bot_turn = self.bot_turn()
-        if self.__game.is_finished or (not player_turn and not bot_turn) or \
-                (not self.__game.bot_active and not player_turn and not self.__last_player_turn_result):
-            self.game_over()
-            return
-        self.__last_player_turn_result = player_turn
-        self.highlight_buttons()
         self.update()
+        thread = BotThread(self, self.__game, self.__pass_button, button)
+        thread.start()
+        # player_turn = self.player_turn(button)
+        # self.hide_buttons()
+        # if self.__game.is_finished:
+        #     self.game_over()
+        #     return
+        # bot_turn = True
+        # if self.__game.bot_active:
+        #     # thread = Thread(target=self.bot_turn)
+        #     # thread.start()
+        #     # thread.join()
+        #     # bot_turn = True
+        #     bot_turn = self.bot_turn()
+        # if self.__game.is_finished or (not player_turn and not bot_turn) or \
+        #         (not self.__game.bot_active and not player_turn and not self.__last_player_turn_result):
+        #     self.game_over()
+        #     return
+        # self.__last_player_turn_result = player_turn
+        # # self.highlight_buttons()
+        # self.update()
 
     def bot_turn(self):
         self.repaint()
+        # thread = BotThread(self, self.__game)
+        # thread.start()
+        # thread.join()
         time.sleep(self.BOT_SPEED)
         bot_checker_coordinates = self.__game.bot_turn()
         success = bot_checker_coordinates is not None
