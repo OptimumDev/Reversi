@@ -13,7 +13,7 @@ import time
 import os
 
 
-class BotThread(QThread):
+class TurnThread(QThread):
 
     def __init__(self, game_window, game, pass_button, button):
         super().__init__()
@@ -53,16 +53,16 @@ class BotThread(QThread):
         player_turn = self.player_turn()
         self.__game_window.hide_buttons()
         if self.__game.is_finished:
-            self.__game_window.game_over()
+            self.__game_window.is_game_over = True
             return
         bot_turn = True
         if self.__game.bot_active:
             bot_turn = self.bot_turn()
-        # if self.__game.is_finished or (not player_turn and not bot_turn) or \
-        #         (not self.__game.bot_active and not player_turn and not self.__game_window.__last_player_turn_result):
-        #     self.__game_window.game_over()
-        #     return
-        # self.__game_window.__last_player_turn_result = player_turn
+        if self.__game.is_finished or (not player_turn and not bot_turn) or \
+                (not self.__game.bot_active and not player_turn and not self.__game_window.last_player_turn_result):
+            self.__game_window.is_game_over = True
+            return
+        self.__game_window.last_player_turn_result = player_turn
         self.__game_window.highlight_buttons()
         self.__game_window.update()
 
@@ -80,6 +80,8 @@ class GameWindow(QMainWindow):
 
         self.ICON = QIcon('images/Icon.png')
 
+        self.is_game_over = False
+
         if len(args) < 2:
             raise ValueError
         is_new_game = args[0]
@@ -90,7 +92,7 @@ class GameWindow(QMainWindow):
             self.__game = Game(args[0], args[1], args[2], args[3], args[4])
         else:
             self.__game = Game(args[0], args[1])
-        self.__last_player_turn_result = True
+        self.last_player_turn_result = True
 
         self.__width = (self.__game.size + self.SHIFT) * self.IMAGE_SIZE + self.IMAGE_SIZE * 12
         self.__height = (self.__game.size + self.SHIFT * 2) * self.IMAGE_SIZE + 20
@@ -261,8 +263,10 @@ class GameWindow(QMainWindow):
 
     def make_turn(self, button):
         self.update()
-        thread = BotThread(self, self.__game, self.__pass_button, button)
+        thread = TurnThread(self, self.__game, self.__pass_button, button)
         thread.start()
+        if self.is_game_over:
+            self.game_over()
         # player_turn = self.player_turn(button)
         # self.hide_buttons()
         # if self.__game.is_finished:
