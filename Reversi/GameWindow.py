@@ -81,6 +81,7 @@ class GameWindow(QMainWindow):
         self.ICON = QIcon('images/Icon.png')
 
         self.is_game_over = False
+        self.__turn_thread = None
 
         if len(args) < 2:
             raise ValueError
@@ -94,8 +95,8 @@ class GameWindow(QMainWindow):
             self.__game = Game(args[0], args[1])
         self.last_player_turn_result = True
 
-        self.__width = (self.__game.size + self.SHIFT) * self.IMAGE_SIZE + self.IMAGE_SIZE * 12
-        self.__height = (self.__game.size + self.SHIFT * 2) * self.IMAGE_SIZE + 20
+        self.WIDTH = (self.__game.size + self.SHIFT) * self.IMAGE_SIZE + self.IMAGE_SIZE * 12
+        self.HEIGHT = (self.__game.size + self.SHIFT * 2) * self.IMAGE_SIZE + 20
 
         logs = os.listdir('logs')
         if len(logs) == 100:
@@ -131,13 +132,13 @@ class GameWindow(QMainWindow):
                                                 (self.SHIFT + self.__game.size - 1) * self.IMAGE_SIZE - 25,
                                                 lambda: self.make_turn(self.__pass_button))
 
-        self.__save_button = self.create_button('Save', self.__width - self.IMAGE_SIZE * 7 - 20, 10, self.save)
+        self.__save_button = self.create_button('Save', self.WIDTH - self.IMAGE_SIZE * 7 - 20, 10, self.save)
 
-        self.__settings_button = self.create_button('Settings', self.__width - self.IMAGE_SIZE * 5 - 20, 10, self.settings)
+        self.__settings_button = self.create_button('Settings', self.WIDTH - self.IMAGE_SIZE * 5 - 20, 10, self.settings)
 
-        self.__restart_button = self.create_button('Restart', self.__width - self.IMAGE_SIZE * 3 - 10, 10, partial(self.restart, True))
+        self.__restart_button = self.create_button('Restart', self.WIDTH - self.IMAGE_SIZE * 3 - 10, 10, partial(self.restart, True))
 
-        self.__quit_button = self.create_button('Quit', self.__width - self.IMAGE_SIZE - 20, 10, partial(self.quit, True))
+        self.__quit_button = self.create_button('Quit', self.WIDTH - self.IMAGE_SIZE - 20, 10, partial(self.quit, True))
 
     def get_checker_buttons(self):
         buttons = {}
@@ -161,7 +162,7 @@ class GameWindow(QMainWindow):
         return button
 
     def set_geometry(self):
-        self.resize(self.__width, self.__height)
+        self.resize(self.WIDTH, self.HEIGHT)
         qt_rectangle = self.frameGeometry()
         center_point = QDesktopWidget().availableGeometry().center()
         qt_rectangle.moveCenter(center_point)
@@ -263,35 +264,13 @@ class GameWindow(QMainWindow):
 
     def make_turn(self, button):
         self.update()
-        thread = TurnThread(self, self.__game, self.__pass_button, button)
-        thread.start()
+        self.__turn_thread = TurnThread(self, self.__game, self.__pass_button, button)
+        self.__turn_thread.start()
         if self.is_game_over:
             self.game_over()
-        # player_turn = self.player_turn(button)
-        # self.hide_buttons()
-        # if self.__game.is_finished:
-        #     self.game_over()
-        #     return
-        # bot_turn = True
-        # if self.__game.bot_active:
-        #     # thread = Thread(target=self.bot_turn)
-        #     # thread.start()
-        #     # thread.join()
-        #     # bot_turn = True
-        #     bot_turn = self.bot_turn()
-        # if self.__game.is_finished or (not player_turn and not bot_turn) or \
-        #         (not self.__game.bot_active and not player_turn and not self.__last_player_turn_result):
-        #     self.game_over()
-        #     return
-        # self.__last_player_turn_result = player_turn
-        # # self.highlight_buttons()
-        # self.update()
 
     def bot_turn(self):
         self.repaint()
-        # thread = BotThread(self, self.__game)
-        # thread.start()
-        # thread.join()
         time.sleep(self.BOT_SPEED)
         bot_checker_coordinates = self.__game.bot_turn()
         success = bot_checker_coordinates is not None
@@ -363,13 +342,13 @@ class GameWindow(QMainWindow):
     def draw_bot(self, painter):
         painter.setFont(self.FONT)
         difficulty = self.__game.BOT_DIFFICULTIES[self.__game.BOT_DIFFICULTY]
-        painter.drawText((self.SHIFT + 1) * self.IMAGE_SIZE + 10, self.__height - 10,
+        painter.drawText((self.SHIFT + 1) * self.IMAGE_SIZE + 10, self.HEIGHT - 10,
                          f'Bot difficulty: {difficulty}')
-        painter.drawImage(self.SHIFT * self.IMAGE_SIZE, self.__height - self.IMAGE_SIZE - 10,
+        painter.drawImage(self.SHIFT * self.IMAGE_SIZE, self.HEIGHT - self.IMAGE_SIZE - 10,
                           QImage(f'images/{difficulty}.png').scaled(self.IMAGE_SIZE, self.IMAGE_SIZE))
 
     def draw_signature(self, painter):
-        painter.drawText(self.__width - 125, self.__height - 10, 'Made by Artemiy Izakov')
+        painter.drawText(self.WIDTH - 125, self.HEIGHT - 10, 'Made by Artemiy Izakov')
 
     def draw_score(self, painter):
         painter.setFont(self.FONT)
