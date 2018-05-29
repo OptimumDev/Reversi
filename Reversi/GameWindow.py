@@ -117,10 +117,11 @@ class GameWindow(QMainWindow):
         self.move(self.x(), self.y() - 15)
 
     def save(self):
-        name = QFileDialog.getSaveFileName(self, 'Save', 'saves/', 'Reversy Save (*.rs)')[0]
+        folder = 'offline' if True else 'online'
+        name = QFileDialog.getSaveFileName(self, 'Save', f'saves/{folder}', 'Save Files (*.save)')[0]
         if name == '':
             return False
-        full_name = name if len(name) > 3 and name[-3:] == '.rs' else name + '.rs'
+        full_name = name if len(name) > 3 and name[-5:] == '.save' else name + '.save'
         with open(full_name, 'w') as file:
             text = self.__game.get_save()
             file.write(text)
