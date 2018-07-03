@@ -13,7 +13,6 @@ from TurnThreads import TurnThread, BotThread
 
 
 class GameWindow(QMainWindow):
-
     EXIT_CODE_CHANGE_MODE = -123
     IMAGE_SIZE = 50
     SHIFT = 1
@@ -81,9 +80,11 @@ class GameWindow(QMainWindow):
 
         self.__save_button = self.create_button('Save', self.WIDTH - self.IMAGE_SIZE * 7 - 20, 10, self.save)
 
-        self.__settings_button = self.create_button('Settings', self.WIDTH - self.IMAGE_SIZE * 5 - 20, 10, self.settings)
+        self.__settings_button = self.create_button('Settings', self.WIDTH - self.IMAGE_SIZE * 5 - 20, 10,
+                                                    self.settings)
 
-        self.__restart_button = self.create_button('Restart', self.WIDTH - self.IMAGE_SIZE * 3 - 10, 10, partial(self.restart, True))
+        self.__restart_button = self.create_button('Restart', self.WIDTH - self.IMAGE_SIZE * 3 - 10, 10,
+                                                   partial(self.restart, True))
 
         self.__quit_button = self.create_button('Quit', self.WIDTH - self.IMAGE_SIZE - 20, 10, partial(self.quit, True))
 
@@ -131,8 +132,8 @@ class GameWindow(QMainWindow):
         message = QMessageBox()
         message.move(self.x() + (self.width() - message.width()) / 2, self.y() + (self.height() - message.height()) / 2)
         choice = message.question(message, 'Save game?',
-                                      'This will finish current game\nWould you like to save yor game?',
-                                      QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel, QMessageBox.Cancel)
+                                  'This will finish current game\nWould you like to save yor game?',
+                                  QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel, QMessageBox.Cancel)
         success = choice != QMessageBox.Cancel
         if choice == QMessageBox.Yes:
             success = self.save()
@@ -212,7 +213,8 @@ class GameWindow(QMainWindow):
 
     def make_turn(self, button):
         self.update()
-        self.__turn_thread = TurnThread(self, self.IMAGE_SIZE, self.SHIFT, self.BOT_SPEED, self.__game, self.__pass_button, button)
+        self.__turn_thread = TurnThread(self, self.IMAGE_SIZE, self.SHIFT, self.BOT_SPEED, self.__game,
+                                        self.__pass_button, button)
         self.__turn_thread.start()
         if self.is_game_over:
             self.game_over()
