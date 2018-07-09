@@ -112,7 +112,8 @@ class SettingsWindow(QWidget):
                                         self.SIDE_SHIFT + (i - 10) / 2 * (self.BUTTON_SIZE + self.BETWEEN_SHIFT),
                                         self.UPPER_SHIFT + self.BUTTON_SIZE + self.BETWEEN_SHIFT,
                                         partial(self.change_size, i))
-        back = self.create_back_button(self.new_load if self.__is_online else self.pvp_pve)
+        back = self.create_back_button(self.new_load if self.__is_online else
+                                       (self.bot if self.__is_bot_active else self.pvp_pve))
 
     def change_size(self, size):
         self.__board_size = size
