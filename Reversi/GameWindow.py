@@ -35,7 +35,6 @@ class GameWindow(QMainWindow):
         else:
             self.__game = Game(args[0], args[1])
 
-        self.last_player_turn_result = True
         self.is_game_over = False
         self.__turn_thread = None
 
@@ -67,7 +66,6 @@ class GameWindow(QMainWindow):
         self.setWindowIcon(self.ICON)
         self.setWindowTitle('Reversi')
         self.setStyleSheet('background: LightBlue;')
-        # self.setStyleSheet('background-image: url("images/wood.png");')
 
         self.__controls = []
 
@@ -213,6 +211,8 @@ class GameWindow(QMainWindow):
 
     def make_turn(self, button):
         self.update()
+        if self.is_game_over:
+            self.game_over()
         self.__turn_thread = TurnThread(self, self.IMAGE_SIZE, self.SHIFT, self.BOT_SPEED, self.__game,
                                         self.__pass_button, button)
         self.__turn_thread.start()

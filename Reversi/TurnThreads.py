@@ -27,11 +27,10 @@ class TurnThread(QThread):
         if self.__button == self.__pass_button:
             self.__game_window.log(f"Player's turn\t({color}): passed")
             self.__game.pass_turn()
-            return False
+            return
         self.__game_window.log(f"Player's turn\t({color}): placed checker at {coordinates}")
         self.__game.make_turn(coordinates)
         self.__game_window.remove_button(coordinates)
-        return True
 
     def bot_turn(self):
         time.sleep(self.__bot_speed)
@@ -44,22 +43,20 @@ class TurnThread(QThread):
             log_message = 'passed'
         bot_color = Game.WHITE if self.__game.BOT_IS_WHITE else Game.BLACK
         self.__game_window.log(f"Bot's turn\t({bot_color}): {log_message}")
-        return success
 
     def run(self):
-        player_turn = self.player_turn()
+        self.player_turn()
         self.__game_window.hide_buttons()
         if self.__game.is_finished:
             self.__game_window.is_game_over = True
+            print('finished')
             return
-        bot_turn = True
         if self.__game.bot_active:
-            bot_turn = self.bot_turn()
-        if self.__game.is_finished or (not player_turn and not bot_turn) or \
-                (not self.__game.bot_active and not player_turn and not self.__game_window.last_player_turn_result):
+            self.bot_turn()
+        if self.__game.is_finished:
             self.__game_window.is_game_over = True
+            print('finished')
             return
-        self.__game_window.last_player_turn_result = player_turn
         self.__game_window.highlight_buttons()
         self.__game_window.update()
 

@@ -126,7 +126,8 @@ class Game:
 
     @property
     def is_finished(self):
-        return len(self.__checkers) == len(self.__game_map)
+        return len(self.__checkers) == len(self.__game_map) or \
+               (len(self.get_possible_turns(True)) == 0 and len(self.get_possible_turns(False)) == 0)
 
     def get_save(self):
         mode = 'pve' + str(self.BOT_DIFFICULTY) if self.__bot_active else 'pvp'
@@ -213,7 +214,7 @@ class Game:
         for turn in possible_turns:
             score = self.check_bot_turn(turn)
             self.use_copy(map_copy)
-            if score > best_variant_score:
+            if score >= best_variant_score:
                 best_variant_score = score
                 best_turn = turn
         self.pass_turn()
@@ -251,10 +252,12 @@ class Game:
         self.__colored_checkers = map_copy[4]
         self.__white_turn = map_copy[5]
 
-    def get_possible_turns(self):
+    def get_possible_turns(self, color=None):
+        if color is None:
+            color = self.is_white_turn
         possible_turns = []
         for cell in self.__game_map:
-            if cell.coordinates not in self.__occupied_coordinates and self.check_turn(cell.coordinates):
+            if cell.coordinates not in self.__occupied_coordinates and self.check_turn(cell.coordinates, color):
                 possible_turns.append(cell.coordinates)
         return possible_turns
 
