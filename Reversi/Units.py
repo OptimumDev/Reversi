@@ -33,6 +33,11 @@ class Cell(Unit):
     def normalize(self):
         self._image = self.NORMAL
 
+    def __deepcopy__(self, memodict={}):
+        copy = Cell(self.coordinates)
+        copy._image = self._image
+        return copy
+
 
 class Checker(Unit):
 
@@ -50,3 +55,13 @@ class Checker(Unit):
     def change_color(self):
         self._image = self.BLACK if self.__is_white else self.WHITE
         self.__is_white = not self.__is_white
+
+    def __deepcopy__(self, memodict={}):
+        return Checker(self.coordinates, self.is_white)
+
+    def __eq__(self, other):
+        return self.coordinates == other.coordinates and self.is_white == other.is_white
+
+    def __str__(self):
+        color = 'White' if self.is_white else 'Black'
+        return f'Checker({self.coordinates.x}, {self.coordinates.y}, {color})'

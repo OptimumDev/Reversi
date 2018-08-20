@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 
 
+import copy
 from Point import Point
 from Units import Cell, Checker
 
 
 class Game:
-
     WHITE = 'White'
     BLACK = 'Black'
     YOU = 'You'
     BOT = 'Bot'
     PLAYER = 'Player'
     BOT_DIFFICULTIES = ['Easy', 'Normal', 'Hard']
+    HARD_BOT_INTELLIGENCE = 2
 
     def __init__(self, *args):
         if len(args) < 2:
@@ -163,8 +164,10 @@ class Game:
                 self.__colored_checkers[self.BLACK].append(checker)
         return checkers_dict
 
-    def check_turn(self, coordinates):
-        return len(self.get_enemies_around(Checker(coordinates, self.is_white_turn))) > 0
+    def check_turn(self, coordinates, color=None):
+        if color is None:
+            color = self.is_white_turn
+        return len(self.get_enemies_around(Checker(coordinates, color))) > 0
 
     def pass_turn(self):
         self.__white_turn = not self.__white_turn
@@ -203,8 +206,57 @@ class Game:
         return best_position
 
     def hard_bot_turn(self):
+        map_copy = self.copy_current_state()
+        possible_turns = self.get_possible_turns()
+        best_variant_score = 0
+        best_turn = None
+        for turn in possible_turns:
+            score = self.check_bot_turn(turn)
+            self.use_copy(map_copy)
+            if score > best_variant_score:
+                best_variant_score = score
+                best_turn = turn
         self.pass_turn()
-        return None
+        return best_turn
+
+    def check_bot_turn(self, turn, turn_number=0):
+        turn_number += 1
+        bot_color = self.WHITE if self.BOT_IS_WHITE else self.BLACK
+        map_copy = self.copy_current_state()
+        self.make_turn(turn)
+        possible_turns = self.get_possible_turns()
+        if turn_number == (self.HARD_BOT_INTELLIGENCE - 1) * 2 or len(possible_turns) == 0:
+            return self.__score[bot_color]
+        best_variant_score = 0
+        for turn in possible_turns:
+            score = self.check_bot_turn(turn, turn_number)
+            self.use_copy(map_copy)
+            if score > best_variant_score:
+                best_variant_score = score
+        return best_variant_score
+
+    def copy_current_state(self):
+        return copy.deepcopy([copy.deepcopy(self.__game_map),
+                              self.__score,
+                              self.__occupied_coordinates,
+                              self.__checkers,
+                              self.__colored_checkers,
+                              self.__white_turn])
+
+    def use_copy(self, map_copy):
+        self.__game_map = map_copy[0]
+        self.__score = map_copy[1]
+        self.__occupied_coordinates = map_copy[2]
+        self.__checkers = map_copy[3]
+        self.__colored_checkers = map_copy[4]
+        self.__white_turn = map_copy[5]
+
+    def get_possible_turns(self):
+        possible_turns = []
+        for cell in self.__game_map:
+            if cell.coordinates not in self.__occupied_coordinates and self.check_turn(cell.coordinates):
+                possible_turns.append(cell.coordinates)
+        return possible_turns
 
     def get_enemies_around(self, checker):
         enemies = []
