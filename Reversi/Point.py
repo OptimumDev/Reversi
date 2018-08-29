@@ -2,6 +2,7 @@
 
 
 from math import sqrt
+import copy
 
 
 class Point:
@@ -39,7 +40,7 @@ class Point:
         return self
 
     def __deepcopy__(self, memodict={}):
-        return Point(self.__x, self.__y)
+        return Point(copy.deepcopy(self.__x), copy.deepcopy(self.__y))
 
     def move(self, shift):
         self.__x += shift

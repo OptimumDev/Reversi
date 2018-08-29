@@ -217,7 +217,7 @@ class Game:
             if score >= best_variant_score:
                 best_variant_score = score
                 best_turn = turn
-        self.pass_turn()
+        self.make_turn(best_turn)
         return best_turn
 
     def check_bot_turn(self, turn, turn_number=0):
@@ -237,7 +237,7 @@ class Game:
         return best_variant_score
 
     def copy_current_state(self):
-        return copy.deepcopy([copy.deepcopy(self.__game_map),
+        return copy.deepcopy([self.__game_map,
                               self.__score,
                               self.__occupied_coordinates,
                               self.__checkers,
@@ -245,12 +245,13 @@ class Game:
                               self.__white_turn])
 
     def use_copy(self, map_copy):
-        self.__game_map = map_copy[0]
-        self.__score = map_copy[1]
-        self.__occupied_coordinates = map_copy[2]
-        self.__checkers = map_copy[3]
-        self.__colored_checkers = map_copy[4]
-        self.__white_turn = map_copy[5]
+        new_copy = copy.deepcopy(map_copy)
+        self.__game_map = new_copy[0]
+        self.__score = new_copy[1]
+        self.__occupied_coordinates = new_copy[2]
+        self.__checkers = new_copy[3]
+        self.__colored_checkers = new_copy[4]
+        self.__white_turn = new_copy[5]
 
     def get_possible_turns(self, color=None):
         if color is None:

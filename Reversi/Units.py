@@ -2,6 +2,7 @@
 
 
 from PyQt5.QtGui import QImage
+import copy
 
 
 class Unit:
@@ -34,9 +35,9 @@ class Cell(Unit):
         self._image = self.NORMAL
 
     def __deepcopy__(self, memodict={}):
-        copy = Cell(self.coordinates)
-        copy._image = self._image
-        return copy
+        cell_copy = Cell(copy.deepcopy(self._coordinates))
+        cell_copy._image = self._image
+        return cell_copy
 
 
 class Checker(Unit):
@@ -57,7 +58,7 @@ class Checker(Unit):
         self.__is_white = not self.__is_white
 
     def __deepcopy__(self, memodict={}):
-        return Checker(self.coordinates, self.is_white)
+        return Checker(copy.deepcopy(self._coordinates), copy.deepcopy(self.__is_white))
 
     def __eq__(self, other):
         return self.coordinates == other.coordinates and self.is_white == other.is_white
