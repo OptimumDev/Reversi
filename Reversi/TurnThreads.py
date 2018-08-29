@@ -56,7 +56,6 @@ class TurnThread(QThread):
         if self.__game.is_finished:
             self.__game_window.is_game_over = True
             print('finished')
-            return
         self.__game_window.highlight_buttons()
         self.__game_window.update()
 
