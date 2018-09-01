@@ -49,13 +49,11 @@ class TurnThread(QThread):
         self.__game_window.hide_buttons()
         if self.__game.is_finished:
             self.__game_window.is_game_over = True
-            print('finished')
             return
         if self.__game.bot_active:
             self.bot_turn()
         if self.__game.is_finished:
             self.__game_window.is_game_over = True
-            print('finished')
         self.__game_window.highlight_buttons()
         self.__game_window.update()
 

@@ -211,8 +211,6 @@ class GameWindow(QMainWindow):
 
     def make_turn(self, button):
         self.update()
-        if self.is_game_over:
-            self.game_over()
         self.__turn_thread = TurnThread(self, self.IMAGE_SIZE, self.SHIFT, self.BOT_SPEED, self.__game,
                                         self.__pass_button, button)
         self.__turn_thread.start()

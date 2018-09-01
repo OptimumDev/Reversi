@@ -13,7 +13,7 @@ class Game:
     BOT = 'Bot'
     PLAYER = 'Player'
     BOT_DIFFICULTIES = ['Easy', 'Normal', 'Hard']
-    HARD_BOT_INTELLIGENCE = 2
+    HARD_BOT_INTELLIGENCE = 3
 
     def __init__(self, *args):
         if len(args) < 2:
@@ -217,7 +217,10 @@ class Game:
             if score >= best_variant_score:
                 best_variant_score = score
                 best_turn = turn
-        self.make_turn(best_turn)
+        if best_turn is not None:
+            self.make_turn(best_turn)
+        else:
+            self.pass_turn()
         return best_turn
 
     def check_bot_turn(self, turn, turn_number=0):
