@@ -3,9 +3,12 @@
 
 from math import sqrt
 import copy
+import re
 
 
 class Point:
+
+    STRING_PARSER = re.compile(r'Point\((?P<x>\d+), (?P<y>\d+)\)')
 
     def __init__(self, x, y):
         self.__x = x
@@ -41,6 +44,13 @@ class Point:
 
     def __deepcopy__(self, memodict={}):
         return Point(copy.deepcopy(self.__x), copy.deepcopy(self.__y))
+
+    @staticmethod
+    def from_string(point_string):
+        coordinates = Point.STRING_PARSER.search(point_string)
+        if coordinates is None or not coordinates['x'].isdecimal() or not coordinates['y'].isdecimal():
+            raise ValueError
+        return Point(int(coordinates['x']), int(coordinates['y']))
 
     def move(self, shift):
         self.__x += shift
