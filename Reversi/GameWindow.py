@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 from Game import Game
 from Units import Checker
+from Point import Point
 from datetime import datetime
 import os
 from TurnThreads import TurnThread, BotThread
@@ -28,13 +29,16 @@ class GameWindow(QMainWindow):
             raise ValueError
         is_new_game = args[0]
         if is_new_game:
-            if len(args) != 5:
+            if len(args) != 7:
                 raise ValueError
         if is_new_game:
             self.__game = Game(args[0], args[1], args[2], args[3], args[4])
         else:
             self.__game = Game(args[0], args[1])
 
+        self.me_first =  args[3]
+        self.is_online = args[5]
+        self.socket = args[6]
         self.is_game_over = False
         self.__turn_thread = None
 
@@ -57,6 +61,9 @@ class GameWindow(QMainWindow):
         if self.__game.PLAYER_IS_WHITE and self.__game.bot_active and not self.__game.is_white_turn:
             self.bot_thread = BotThread(self, self.BOT_SPEED, self.__game)
             self.bot_thread.start()
+        elif self.is_online and not self.me_first:
+            self.update()
+            self.socket.wait_for_turn(self.__game, self)
         else:
             self.highlight_buttons()
 
@@ -211,11 +218,20 @@ class GameWindow(QMainWindow):
 
     def make_turn(self, button):
         self.update()
-        self.__turn_thread = TurnThread(self, self.IMAGE_SIZE, self.SHIFT, self.BOT_SPEED, self.__game,
-                                        self.__pass_button, button)
-        self.__turn_thread.start()
-        if self.is_game_over:
-            self.game_over()
+        if not self.is_online:
+            self.__turn_thread = TurnThread(self, self.IMAGE_SIZE, self.SHIFT, self.BOT_SPEED, self.__game,
+                                            self.__pass_button, button)
+            self.__turn_thread.start()
+            if self.is_game_over:
+                self.game_over()
+        else:
+            if button == self.__pass_button:
+                coordinates = None
+            else:
+                coordinates = Point(button.x(), button.y()).to_cell_coordinates(self.IMAGE_SIZE,
+                                                                                self.SHIFT)
+            self.socket.make_turn(self.__game, self, coordinates)
+            self.socket.wait_for_turn(self.__game, self)
 
     def remove_button(self, coordinates):
         coordinates = coordinates.to_tuple()

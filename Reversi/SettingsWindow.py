@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QSize
 from functools import partial
 from GameWindow import GameWindow
+from OnlineMode import Server, Client
 
 
 class SettingsWindow(QWidget):
@@ -30,6 +31,7 @@ class SettingsWindow(QWidget):
         self.__is_bot_active = False
         self.__bot_difficulty = 1
         self.__ip = '0.0.0.0'
+        self.socket = None
 
         self.__controls = []
         self.__current_title = 'Game Mode'
@@ -156,6 +158,11 @@ class SettingsWindow(QWidget):
             label.hide()
             self.first()
         back = self.create_back_button(back_function)
+        # dich
+        self.repaint()
+        self.socket = Server(self.__board_size, self.__is_player_first)
+        if self.socket.is_connected:
+            self.run()
 
     def ip(self):
         self.set_up()
@@ -178,7 +185,13 @@ class SettingsWindow(QWidget):
         self.__ip = text
 
     def enter_ip(self,):
-        pass
+        self.socket = Client(self.__ip)
+        if self.socket.connect_to_server():
+            self.__board_size = self.socket.board_size
+            self.__is_player_first = self.socket.me_first
+            self.run()
+        else:
+            pass
 
     def pvp_pve(self):
         self.set_up()
@@ -209,11 +222,12 @@ class SettingsWindow(QWidget):
         name = QFileDialog.getOpenFileName(self, 'Chose Save File', f'saves/{folder}/', 'Save Files (*.save)')[0]
         if name == '':
             return
-        GameWindow(False, name)
+        GameWindow(False, name, self.__is_online, self.socket)
         self.hide()
 
     def run(self):
-        GameWindow(True, self.__board_size, self.__is_bot_active, self.__is_player_first, self.__bot_difficulty)
+        GameWindow(True, self.__board_size, self.__is_bot_active, self.__is_player_first, self.__bot_difficulty,
+                   self.__is_online, self.socket)
         self.hide()
 
     def paintEvent(self, event):
