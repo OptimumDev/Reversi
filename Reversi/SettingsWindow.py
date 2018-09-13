@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from PyQt5.QtGui import QIcon, QPainter, QFont, QImage, QMovie
+from PyQt5.QtGui import QIcon, QPainter, QFont, QImage, QMovie, QPen, QColor
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QSize, QBasicTimer
 from functools import partial
@@ -30,8 +30,9 @@ class SettingsWindow(QWidget):
         self.__is_player_first = True
         self.__is_bot_active = False
         self.__bot_difficulty = 1
-        self.__ip = '0.0.0.0'
+        self.__ip = ''
         self.socket = None
+        self.ip_error = False
 
         self.__controls = []
         self.__current_title = 'Game Mode'
@@ -183,6 +184,7 @@ class SettingsWindow(QWidget):
         def back_function():
             address.hide()
             self.host_join()
+            self.ip_error = False
         back = self.create_back_button(back_function)
 
     def change_ip(self, text):
@@ -193,9 +195,11 @@ class SettingsWindow(QWidget):
         if self.socket.connect_to_server():
             self.__board_size = self.socket.board_size
             self.__is_player_first = self.socket.me_first
+            self.ip_error = False
             self.run()
         else:
-            pass
+            self.ip_error = True
+            self.update()
 
     def pvp_pve(self):
         self.set_up()
@@ -246,6 +250,12 @@ class SettingsWindow(QWidget):
 
     def draw_title(self, painter):
         painter.drawText(0, 0, self.WIDTH, self.UPPER_SHIFT, Qt.AlignCenter | Qt.AlignVCenter, self.__current_title)
+        if self.ip_error:
+            pen = painter.pen()
+            painter.setPen(QPen(QColor('#ff0000')))
+            painter.drawText(0, self.UPPER_SHIFT / 2 + 10, self.WIDTH, self.UPPER_SHIFT, Qt.AlignCenter | Qt.AlignVCenter,
+                             'Failed to connect')
+            painter.setPen(pen)
 
     def draw_controls(self, painter):
         for button in self.__controls:
