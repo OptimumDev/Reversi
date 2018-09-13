@@ -177,9 +177,11 @@ class GameWindow(QMainWindow):
         size = self.__game.size
         player_first = self.__game.BOT_IS_WHITE
         bot_difficulty = self.__game.BOT_DIFFICULTY
+        is_online = self.is_online
+        socket = self.socket
         self.close()
         self.destroy()
-        GameWindow(True, size, bot_active, player_first, bot_difficulty)
+        GameWindow(True, size, bot_active, player_first, bot_difficulty, is_online, socket)
 
     def quit(self, to_ask):
         if to_ask and not self.ask_for_save():
