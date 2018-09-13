@@ -79,3 +79,30 @@ class BotThread(QThread):
         bot_color = Game.WHITE if self.__game.BOT_IS_WHITE else Game.BLACK
         self.__game_window.log(f"Bot's turn\t({bot_color}): {log_message}")
         self.__game_window.highlight_buttons()
+
+
+class OnlineThread(QThread):
+
+    def __init__(self, game, game_window, coordinates, just_waiting=False):
+        super().__init__()
+        self.daemon = True
+        self.game = game
+        self.game_window = game_window
+        self.coordinates = coordinates
+        self.just_waiting = just_waiting
+
+    def check_game(self):
+        if self.game.is_finished:
+            self.game_window.is_game_over = True
+            return True
+
+    def run(self):
+        if not self.just_waiting:
+            self.game_window.socket.make_turn(self.game, self.game_window, self.coordinates)
+        if self.check_game():
+            return
+        self.game_window.update()
+        self.game_window.socket.wait_for_turn(self.game, self.game_window)
+        if self.check_game():
+            return
+

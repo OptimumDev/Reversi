@@ -10,7 +10,7 @@ from Units import Checker
 from Point import Point
 from datetime import datetime
 import os
-from TurnThreads import TurnThread, BotThread
+from TurnThreads import TurnThread, BotThread, OnlineThread
 
 
 class GameWindow(QMainWindow):
@@ -40,6 +40,7 @@ class GameWindow(QMainWindow):
         self.is_online = args[5]
         self.socket = args[6]
         self.is_game_over = False
+        self.connection_lost = False
         self.__turn_thread = None
 
         self.WIDTH = (self.__game.size + self.SHIFT) * self.IMAGE_SIZE + self.IMAGE_SIZE * 12
@@ -62,8 +63,8 @@ class GameWindow(QMainWindow):
             self.bot_thread = BotThread(self, self.BOT_SPEED, self.__game)
             self.bot_thread.start()
         elif self.is_online and not self.me_first:
-            self.update()
-            self.socket.wait_for_turn(self.__game, self)
+            self.online_thread = OnlineThread(self.__game, self, None, True)
+            self.online_thread.start()
         else:
             self.highlight_buttons()
 
@@ -200,8 +201,12 @@ class GameWindow(QMainWindow):
             winner = log_color
             log_winner = Game.PLAYER
         is_draw = self.__game.score[Game.WHITE] == self.__game.score[Game.BLACK]
-        message = 'Draw!' if is_draw else '{} won!'.format(winner)
-        self.log('Draw' if is_draw else f'{log_winner} ({log_color}) won')
+        if self.connection_lost:
+            message = 'connection lost'
+            self.log(message)
+        else:
+            message = 'Draw!' if is_draw else '{} won!'.format(winner)
+            self.log('Draw' if is_draw else f'{log_winner} ({log_color}) won')
         self.create_game_over_window(message)
 
     def create_game_over_window(self, message):
@@ -211,6 +216,8 @@ class GameWindow(QMainWindow):
         game_over_window.setWindowTitle('Game Over')
         game_over_window.setText(message)
         restart = game_over_window.addButton('Restart', QMessageBox.AcceptRole)
+        if self.connection_lost:
+            restart.setEnabled(False)
         game_over_window.addButton('Quit', QMessageBox.RejectRole)
         game_over_window.exec()
         if game_over_window.clickedButton() == restart:
@@ -221,19 +228,25 @@ class GameWindow(QMainWindow):
     def make_turn(self, button):
         self.update()
         if not self.is_online:
-            self.__turn_thread = TurnThread(self, self.IMAGE_SIZE, self.SHIFT, self.BOT_SPEED, self.__game,
-                                            self.__pass_button, button)
-            self.__turn_thread.start()
-            if self.is_game_over:
-                self.game_over()
+            self.offline_turn(button)
         else:
-            if button == self.__pass_button:
-                coordinates = None
-            else:
-                coordinates = Point(button.x(), button.y()).to_cell_coordinates(self.IMAGE_SIZE,
-                                                                                self.SHIFT)
-            self.socket.make_turn(self.__game, self, coordinates)
-            self.socket.wait_for_turn(self.__game, self)
+            self.online_turn(button)
+        if self.is_game_over or self.connection_lost:
+            self.game_over()
+
+    def offline_turn(self, button):
+        self.__turn_thread = TurnThread(self, self.IMAGE_SIZE, self.SHIFT, self.BOT_SPEED, self.__game,
+                                        self.__pass_button, button)
+        self.__turn_thread.start()
+
+    def online_turn(self, button):
+        if button == self.__pass_button:
+            coordinates = None
+        else:
+            coordinates = Point(button.x(), button.y()).to_cell_coordinates(self.IMAGE_SIZE,
+                                                                            self.SHIFT)
+        self.__turn_thread = OnlineThread(self.__game, self, coordinates)
+        self.__turn_thread.start()
 
     def remove_button(self, coordinates):
         coordinates = coordinates.to_tuple()
