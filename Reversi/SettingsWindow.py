@@ -3,7 +3,7 @@
 
 from PyQt5.QtGui import QIcon, QPainter, QFont, QImage, QMovie
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QBasicTimer
 from functools import partial
 from GameWindow import GameWindow
 from OnlineMode import Server, Client
@@ -143,8 +143,12 @@ class SettingsWindow(QWidget):
 
     def wait(self):
         self.set_up()
+        self.socket = Server(self.__board_size, self.__is_player_first)
+        self.socket.start()
+        self.server_timer = QBasicTimer()
+        self.server_timer.start(10000, self)
         self.__current_title = "Waiting For Second Player To Connect\n" \
-                               "(Not ready yet, but this Puppy is amazing, isn't it?)"
+                               f"(Your IP: {self.socket.ip})"
         label = QLabel(self)
         corgi = QMovie('images/BigCorgi.gif')
         size = self.HEIGHT - self.UPPER_SHIFT
@@ -158,10 +162,10 @@ class SettingsWindow(QWidget):
             label.hide()
             self.first()
         back = self.create_back_button(back_function)
-        # dich
-        self.repaint()
-        self.socket = Server(self.__board_size, self.__is_player_first)
+
+    def timerEvent(self, event):
         if self.socket.is_connected:
+            self.server_timer.stop()
             self.run()
 
     def ip(self):

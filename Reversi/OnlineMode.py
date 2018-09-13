@@ -6,6 +6,7 @@ import ipaddress
 import re
 from Game import Game
 from Point import Point
+from PyQt5.QtCore import QThread
 
 
 class OnlineMode:
@@ -46,12 +47,16 @@ class OnlineMode:
             game_window.connection_lost = True
 
 
-class Server:
+class Server(QThread):
     PORT = 37001
     ENCODING = 'utf-8'
 
     def __init__(self, board_size, me_first):
+        super().__init__()
         self.is_connected = False
+
+        self.board_size = board_size
+        self.me_first = me_first
 
         self.ip = socket.gethostbyname(socket.getfqdn())
         print(self.ip)
@@ -59,8 +64,9 @@ class Server:
         self.server_socket.bind(('', self.PORT))
         self.server_socket.listen(1)
 
+    def run(self):
         self.client_socket, self.client_address = self.server_socket.accept()
-        self.client_socket.send(bytes(f'{board_size}, {int(not me_first)}', self.ENCODING))
+        self.client_socket.send(bytes(f'{self.board_size}, {int(not self.me_first)}', self.ENCODING))
         self.is_connected = True
 
     def make_turn(self, game, game_window, turn=None):
