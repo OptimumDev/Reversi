@@ -28,6 +28,23 @@ class OnlineMode:
         except ConnectionError:
             game_window.connection_lost = True
 
+    @staticmethod
+    def wait_for_turn(online_socket, game, game_window):
+        try:
+            color = Game.WHITE if game.is_white_turn else Game.BLACK
+            answer = online_socket.client_socket.recv(1024).decode()
+            if answer == 'pass':
+                game_window.log(f"Player's turn\t({color}): passed")
+                game.pass_turn()
+            else:
+                turn = Point.from_string(answer)
+                game_window.log(f"Player's turn\t({color}): placed checker at {turn}")
+                game.make_turn(turn)
+                game_window.remove_button(turn)
+            game_window.highlight_buttons()
+        except ConnectionError:
+            game_window.connection_lost = True
+
 
 class Server:
     PORT = 37001
@@ -47,31 +64,10 @@ class Server:
         self.is_connected = True
 
     def make_turn(self, game, game_window, turn=None):
-        color = Game.WHITE if game.is_white_turn else Game.BLACK
-        if turn is None:
-            message = 'pass'
-            game_window.log(f"Player's turn\t({color}): passed")
-            game.pass_turn()
-        else:
-            message = str(turn)
-            game_window.log(f"Player's turn\t({color}): placed checker at {turn}")
-            game.make_turn(turn)
-            game_window.remove_button(turn)
-        self.client_socket.send(bytes(message, Server.ENCODING))
-        game_window.hide_buttons()
+        OnlineMode.make_turn(self, game, game_window, turn)
 
     def wait_for_turn(self, game, game_window):
-        color = Game.WHITE if game.is_white_turn else Game.BLACK
-        answer = self.client_socket.recv(1024).decode()
-        if answer == 'pass':
-            game_window.log(f"Player's turn\t({color}): passed")
-            game.pass_turn()
-        else:
-            turn = Point.from_string(answer)
-            game_window.log(f"Player's turn\t({color}): placed checker at {turn}")
-            game.make_turn(turn)
-            game_window.remove_button(turn)
-        game_window.highlight_buttons()
+        OnlineMode.wait_for_turn(self, game, game_window)
 
 
 class Client:
@@ -106,34 +102,7 @@ class Client:
             return True
 
     def make_turn(self, game, game_window, turn=None):
-        try:
-            color = Game.WHITE if game.is_white_turn else Game.BLACK
-            if turn is None:
-                message = 'pass'
-                game_window.log(f"Player's turn\t({color}): passed")
-                game.pass_turn()
-            else:
-                message = str(turn)
-                game_window.log(f"Player's turn\t({color}): placed checker at {turn}")
-                game.make_turn(turn)
-                game_window.remove_button(turn)
-            self.client_socket.send(bytes(message, Server.ENCODING))
-            game_window.hide_buttons()
-        except ConnectionError:
-            game_window.connection_lost = True
+        OnlineMode.make_turn(self, game, game_window, turn)
 
     def wait_for_turn(self, game, game_window):
-        try:
-            color = Game.WHITE if game.is_white_turn else Game.BLACK
-            answer = self.client_socket.recv(1024).decode()
-            if answer == 'pass':
-                game_window.log(f"Player's turn\t({color}): passed")
-                game.pass_turn()
-            else:
-                turn = Point.from_string(answer)
-                game_window.log(f"Player's turn\t({color}): placed checker at {turn}")
-                game.make_turn(turn)
-                game_window.remove_button(turn)
-            game_window.highlight_buttons()
-        except ConnectionError:
-            game_window.connection_lost = True
+        OnlineMode.wait_for_turn(self, game, game_window)

@@ -99,10 +99,10 @@ class OnlineThread(QThread):
     def run(self):
         if not self.just_waiting:
             self.game_window.socket.make_turn(self.game, self.game_window, self.coordinates)
-        if self.check_game():
+        if self.check_game() or self.game_window.connection_lost:
             return
         self.game_window.update()
         self.game_window.socket.wait_for_turn(self.game, self.game_window)
-        if self.check_game():
+        if self.check_game() or self.game_window.connection_lost:
             return
 
