@@ -49,7 +49,7 @@ class SettingsWindow(QWidget):
         self.move(qt_rectangle.topLeft())
 
         self.setWindowTitle('Game Settings')
-        self.setWindowIcon(QIcon('images/Icon.png'))
+        self.setWindowIcon(QIcon('images/icon.png'))
         self.setStyleSheet('background: LightBlue;')
 
         self.starting()
