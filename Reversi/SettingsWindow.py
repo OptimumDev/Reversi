@@ -90,7 +90,8 @@ class SettingsWindow(QWidget):
     def host_join(self):
         self.set_up()
         self.__current_title = 'Host or Join?'
-        host = self.create_button("Host", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, self.new_load)
+        host = self.create_button("Host", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, self.choose_size)
+        #                                                                                           self.new_load)
         join = self.create_button("Join", self.TWO_BUTTONS_POSITIONS[1], host.y(), self.ip)
         back = self.create_back_button(self.starting)
 
@@ -104,7 +105,7 @@ class SettingsWindow(QWidget):
 
     def choose_size(self):
         self.set_up()
-        self.__current_title = 'Choose Size'
+        self.__current_title = 'Choose Board Size'
         for i in range(4, 9, 2):
             button = self.create_button(str(i), self.BUTTON_SIZE / 2 + self.SIDE_SHIFT +
                                         (i - 4) / 2 * (self.BUTTON_SIZE + self.BETWEEN_SHIFT * 3 / 2),
@@ -171,7 +172,7 @@ class SettingsWindow(QWidget):
 
     def ip(self):
         self.set_up()
-        self.__current_title = 'Enter Host IP\n(Not ready yet) '
+        self.__current_title = 'Enter Host IP'
         address = QLineEdit(self)
         address.setGeometry((self.WIDTH - 300) / 2, self.UPPER_SHIFT + self.BUTTON_SIZE- self.BETWEEN_SHIFT, 300, 50)
         address.setStyleSheet('background: white;')
