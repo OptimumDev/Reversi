@@ -59,7 +59,6 @@ class Server(QThread):
         self.me_first = me_first
 
         self.ip = socket.gethostbyname(socket.getfqdn())
-        print(self.ip)
         self.server_socket = socket.socket()
         self.server_socket.bind(('', self.PORT))
         self.server_socket.listen(1)
@@ -88,13 +87,14 @@ class Client:
         if not self.check_ip():
             return False
         try:
-            print(self.server_ip, Server.PORT)
+            self.client_socket.settimeout(1)
             self.client_socket.connect((self.server_ip, Server.PORT))
+            self.client_socket.settimeout(None)
             game_info = self.client_socket.recv(1024)
             info = self.INFO_PARSER.search(game_info.decode())
             self.board_size = int(info['board_size'])
             self.me_first = bool(int(info['me_first']))
-        except TimeoutError:
+        except (TimeoutError, OSError):
             return False
         else:
             return True

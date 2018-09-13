@@ -188,6 +188,8 @@ class SettingsWindow(QWidget):
         back = self.create_back_button(back_function)
 
     def change_ip(self, text):
+        self.ip_error = False
+        self.update()
         self.__ip = text
 
     def enter_ip(self,):
