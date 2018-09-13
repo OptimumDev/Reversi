@@ -146,7 +146,7 @@ class SettingsWindow(QWidget):
         self.socket = Server(self.__board_size, self.__is_player_first)
         self.socket.start()
         self.server_timer = QBasicTimer()
-        self.server_timer.start(10000, self)
+        self.server_timer.start(500, self)
         self.__current_title = "Waiting For Second Player To Connect\n" \
                                f"(Your IP: {self.socket.ip})"
         label = QLabel(self)
