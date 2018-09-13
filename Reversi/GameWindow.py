@@ -4,7 +4,7 @@
 from functools import partial
 from PyQt5.QtGui import QIcon, QPainter, QFont, QImage
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QBasicTimer
 from Game import Game
 from Units import Checker
 from Point import Point
@@ -19,6 +19,7 @@ class GameWindow(QMainWindow):
     SHIFT = 1
     BOT_SPEED = 1
     FONT = QFont("times", 20)
+    TIMER_INTERVAL = 100
 
     def __init__(self, *args):
         super().__init__()
@@ -36,12 +37,14 @@ class GameWindow(QMainWindow):
         else:
             self.__game = Game(args[0], args[1])
 
-        self.me_first =  args[3]
+        self.me_first = args[3]
         self.is_online = args[5]
         self.socket = args[6]
         self.is_game_over = False
         self.connection_lost = False
         self.__turn_thread = None
+        self.end_game_timer = QBasicTimer()
+        self.end_game_timer.start(self.TIMER_INTERVAL, self)
 
         self.WIDTH = (self.__game.size + self.SHIFT) * self.IMAGE_SIZE + self.IMAGE_SIZE * 12
         self.HEIGHT = (self.__game.size + self.SHIFT * 2) * self.IMAGE_SIZE + 20
@@ -189,7 +192,12 @@ class GameWindow(QMainWindow):
             return
         qApp.exit()
 
+    def timerEvent(self, event):
+        if self.is_game_over or self.connection_lost:
+            self.game_over()
+
     def game_over(self):
+        self.end_game_timer.stop()
         white_won = self.__game.score[Game.WHITE] > self.__game.score[Game.BLACK]
         log_color = Game.WHITE if white_won else Game.BLACK
         if self.__game.bot_active:
