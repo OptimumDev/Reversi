@@ -23,8 +23,9 @@ class SettingsWindow(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.__font = QFont("times", 20)
+        # font, ok = QFontDialog().getFont()
 
+        self.__font = QFont('', 20)
         self.__board_size = 8
         self.__is_online = False
         self.__is_player_first = True
@@ -107,12 +108,12 @@ class SettingsWindow(QWidget):
         self.set_up()
         self.__current_title = 'Choose Board Size'
         for i in range(4, 9, 2):
-            button = self.create_button(str(i), self.BUTTON_SIZE / 2 + self.SIDE_SHIFT +
+            button = self.create_button(f'{i}x{i}', self.BUTTON_SIZE / 2 + self.SIDE_SHIFT +
                                         (i - 4) / 2 * (self.BUTTON_SIZE + self.BETWEEN_SHIFT * 3 / 2),
                                         self.UPPER_SHIFT,
                                         partial(self.change_size, i))
         for i in range(10, 17, 2):
-            button = self.create_button(str(i),
+            button = self.create_button(f'{i}x{i}',
                                         self.SIDE_SHIFT + (i - 10) / 2 * (self.BUTTON_SIZE + self.BETWEEN_SHIFT),
                                         self.UPPER_SHIFT + self.BUTTON_SIZE + self.BETWEEN_SHIFT,
                                         partial(self.change_size, i))
