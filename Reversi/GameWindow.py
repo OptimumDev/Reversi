@@ -26,7 +26,7 @@ class GameWindow(QMainWindow):
 
         self.ICON = QIcon('images/Icon.png')
 
-        if len(args) < 2:
+        if len(args) < 4:
             raise ValueError
         is_new_game = args[0]
         if is_new_game:
@@ -34,12 +34,14 @@ class GameWindow(QMainWindow):
                 raise ValueError
         if is_new_game:
             self.__game = Game(args[0], args[1], args[2], args[3], args[4])
+            self.is_online = args[5]
+            self.socket = args[6]
         else:
             self.__game = Game(args[0], args[1])
+            self.is_online = args[2]
+            self.socket = args[3]
 
         self.me_first = args[3]
-        self.is_online = args[5]
-        self.socket = args[6]
         self.is_game_over = False
         self.connection_lost = False
         self.__turn_thread = None
@@ -49,15 +51,8 @@ class GameWindow(QMainWindow):
         self.WIDTH = (self.__game.size + self.SHIFT) * self.IMAGE_SIZE + self.IMAGE_SIZE * 12
         self.HEIGHT = (self.__game.size + self.SHIFT * 2) * self.IMAGE_SIZE + 20
 
-        logs = os.listdir('logs')
-        if len(logs) == 100:
-            os.remove('logs/' + logs[0])
-        self.__log_name = 'logs/' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt'
-        game_info = 'Player VS '
-        difficulty = Game.BOT_DIFFICULTIES[self.__game.BOT_DIFFICULTY]
-        game_info += f'{difficulty} Bot' if self.__game.bot_active else 'Player'
-        game_info += ' (Board size: {0}x{0})'.format(self.__game.size)
-        self.log(game_info)
+        self.__log_name = None
+        self.start_logging()
 
         self.initUI()
         self.show()
@@ -97,6 +92,19 @@ class GameWindow(QMainWindow):
 
         self.__quit_button = self.create_button('Quit', self.WIDTH - self.IMAGE_SIZE - 20, 10, partial(self.quit, True))
 
+    def start_logging(self):
+        if not os.path.exists('logs') or not os.path.isdir('logs'):
+            os.mkdir('logs')
+        logs = os.listdir('logs')
+        if len(logs) == 100:
+            os.remove('logs/' + logs[0])
+        self.__log_name = 'logs/' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.txt'
+        game_info = 'Player VS '
+        difficulty = Game.BOT_DIFFICULTIES[self.__game.BOT_DIFFICULTY]
+        game_info += f'{difficulty} Bot' if self.__game.bot_active else 'Player'
+        game_info += ' (Board size: {0}x{0})'.format(self.__game.size)
+        self.log(game_info)
+
     def get_checker_buttons(self):
         buttons = {}
         for cell in self.__game.game_map:
@@ -127,7 +135,7 @@ class GameWindow(QMainWindow):
         self.move(self.x(), self.y() - 15)
 
     def save(self):
-        folder = 'offline' if True else 'online'
+        folder = 'online' if self.is_online else 'offline'
         name = QFileDialog.getSaveFileName(self, 'Save', f'saves/{folder}', 'Save Files (*.save)')[0]
         if name == '':
             return False
@@ -166,6 +174,8 @@ class GameWindow(QMainWindow):
         self.update()
 
     def log(self, info):
+        if self.__log_name is None:
+            return
         with open(self.__log_name, 'a') as log_file:
             log_file.write(f'{datetime.now().strftime("%X")} {info}\n')
 
