@@ -22,51 +22,54 @@ class Game:
         if is_new_game:
             if len(args) != 5:
                 raise ValueError
-        if is_new_game:
-            self.__size = args[1]
-
-            self.__white_turn = False
-            self.__bot_active = args[2]
-
-            self.BOT_IS_WHITE = args[3]
-            self.PLAYER_IS_WHITE = not self.BOT_IS_WHITE
-            self.BOT_DIFFICULTY = args[4]
-
-            self.__occupied_coordinates = []
-            self.__game_map = self.get_map()
-
-            self.__colored_checkers = {self.WHITE: [], self.BLACK: []}
-            self.__checkers = self.get_starting_checkers()
+            self.get_new_game_data(args[1], args[2], args[3], args[4])
         else:
-            load_data = self.load(args[1])
-
-            self.__bot_active = load_data[0]
-
-            self.BOT_DIFFICULTY = load_data[1]
-            self.__size = load_data[2]
-
-            self.__white_turn = load_data[3]
-            self.PLAYER_IS_WHITE = load_data[3]
-            self.BOT_IS_WHITE = not self.PLAYER_IS_WHITE
-
-            self.__occupied_coordinates = []
-            self.__game_map = self.get_map()
-
-            self.__colored_checkers = {self.WHITE: [], self.BLACK: []}
-            self.__checkers = {}
-            for white_checker in load_data[4]:
-                self.__colored_checkers[self.WHITE].append(white_checker)
-                self.__checkers[white_checker.coordinates.to_tuple()] = white_checker
-                self.__occupied_coordinates.append(white_checker.coordinates)
-            for black_checker in load_data[5]:
-                self.__colored_checkers[self.BLACK].append(black_checker)
-                self.__checkers[black_checker.coordinates.to_tuple()] = black_checker
-                self.__occupied_coordinates.append(black_checker.coordinates)
+            self.get_load_game_data(self.load(args[1]))
 
         self.__score = {self.WHITE: 0, self.BLACK: 0}
         self.update_score()
 
         self.__bots = [self.easy_bot_turn, self.normal_bot_turn, self.hard_bot_turn]
+
+    def get_new_game_data(self, size, bot_active, bot_is_white, bot_difficulty):
+        self.__size = size
+
+        self.__white_turn = False
+        self.__bot_active = bot_active
+
+        self.BOT_IS_WHITE = bot_is_white
+        self.PLAYER_IS_WHITE = not self.BOT_IS_WHITE
+        self.BOT_DIFFICULTY = bot_difficulty
+
+        self.__occupied_coordinates = []
+        self.__game_map = self.get_map()
+
+        self.__colored_checkers = {self.WHITE: [], self.BLACK: []}
+        self.__checkers = self.get_starting_checkers()
+
+    def get_load_game_data(self, load_data):
+        self.__bot_active = load_data[0]
+
+        self.BOT_DIFFICULTY = load_data[1]
+        self.__size = load_data[2]
+
+        self.__white_turn = load_data[3]
+        self.PLAYER_IS_WHITE = load_data[3]
+        self.BOT_IS_WHITE = not self.PLAYER_IS_WHITE
+
+        self.__occupied_coordinates = []
+        self.__game_map = self.get_map()
+
+        self.__colored_checkers = {self.WHITE: [], self.BLACK: []}
+        self.__checkers = {}
+        for white_checker in load_data[4]:
+            self.__colored_checkers[self.WHITE].append(white_checker)
+            self.__checkers[white_checker.coordinates.to_tuple()] = white_checker
+            self.__occupied_coordinates.append(white_checker.coordinates)
+        for black_checker in load_data[5]:
+            self.__colored_checkers[self.BLACK].append(black_checker)
+            self.__checkers[black_checker.coordinates.to_tuple()] = black_checker
+            self.__occupied_coordinates.append(black_checker.coordinates)
 
     def load(self, file_name):
         load_data = []

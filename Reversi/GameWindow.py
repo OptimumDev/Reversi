@@ -32,7 +32,6 @@ class GameWindow(QMainWindow):
         if is_new_game:
             if len(args) != 7:
                 raise ValueError
-        if is_new_game:
             self.__game = Game(args[0], args[1], args[2], args[3], args[4])
             self.is_online = args[5]
             self.socket = args[6]
