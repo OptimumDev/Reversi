@@ -16,7 +16,6 @@ class TurnThread(QThread):
         self.__image_size = image_size
         self.__shift = shift
         self.__bot_speed = bot_speed
-        self.bot_turn_finished = True
 
     def player_turn(self):
         coordinates = Point(self.__button.x(), self.__button.y()).to_cell_coordinates(self.__image_size,
@@ -32,7 +31,6 @@ class TurnThread(QThread):
         self.__game_window.copy_game_items()
 
     def bot_turn(self):
-        self.bot_turn_finished = False
         time.sleep(self.__bot_speed)
         bot_checker_coordinates = self.__game.bot_turn()
         success = bot_checker_coordinates is not None
@@ -43,7 +41,6 @@ class TurnThread(QThread):
             log_message = 'passed'
         bot_color = Game.WHITE if self.__game.BOT_IS_WHITE else Game.BLACK
         self.__game_window.log(f"Bot's turn\t({bot_color}): {log_message}")
-        self.bot_turn_finished = True
         self.__game_window.copy_game_items()
 
     def run(self):
@@ -68,10 +65,8 @@ class BotThread(QThread):
         self.__game_window = game_window
         self.__game = game
         self.__bot_speed = bot_speed
-        self.bot_turn_finished = True
 
     def run(self):
-        self.bot_turn_finished = False
         time.sleep(self.__bot_speed)
         bot_checker_coordinates = self.__game.bot_turn()
         success = bot_checker_coordinates is not None
@@ -82,7 +77,6 @@ class BotThread(QThread):
             log_message = 'passed'
         bot_color = Game.WHITE if self.__game.BOT_IS_WHITE else Game.BLACK
         self.__game_window.log(f"Bot's turn\t({bot_color}): {log_message}")
-        self.bot_turn_finished = True
         self.__game_window.copy_game_items()
         self.__game_window.highlight_buttons()
 

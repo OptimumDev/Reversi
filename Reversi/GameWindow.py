@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 from functools import partial
 from PyQt5.QtGui import QIcon, QPainter, QFont, QImage
 from PyQt5.QtWidgets import *
@@ -296,9 +293,6 @@ class GameWindow(QMainWindow):
         return player, bot
 
     def paintEvent(self, event):
-        # if not self.__game.bot_active or self.__turn_thread is not None and self.__turn_thread.bot_turn_finished:
-        #     self.copy_game_items()
-
         painter = QPainter()
         painter.begin(self)
 
