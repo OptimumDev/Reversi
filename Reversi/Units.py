@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 from PyQt5.QtGui import QImage
 import copy
 

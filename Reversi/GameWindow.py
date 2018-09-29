@@ -11,6 +11,7 @@ from Point import Point
 from datetime import datetime
 import os
 from TurnThreads import TurnThread, BotThread, OnlineThread
+import copy
 
 
 class GameWindow(QMainWindow):
@@ -53,6 +54,10 @@ class GameWindow(QMainWindow):
         self.__log_name = None
         self.start_logging()
 
+        self.checkers = copy.deepcopy(self.__game.checkers)
+        self.turn = self.__game.is_white_turn
+        self.score = copy.deepcopy(self.__game.score)
+
         self.initUI()
         self.show()
 
@@ -90,6 +95,11 @@ class GameWindow(QMainWindow):
                                                    partial(self.restart, True))
 
         self.__quit_button = self.create_button('Quit', self.WIDTH - self.IMAGE_SIZE - 20, 10, partial(self.quit, True))
+
+    def copy_game_items(self):
+        self.checkers = copy.deepcopy(self.__game.checkers)
+        self.turn = self.__game.is_white_turn
+        self.score = copy.deepcopy(self.__game.score)
 
     def start_logging(self):
         if not os.path.exists('logs') or not os.path.isdir('logs'):
@@ -286,22 +296,25 @@ class GameWindow(QMainWindow):
         return player, bot
 
     def paintEvent(self, event):
+        # if not self.__game.bot_active or self.__turn_thread is not None and self.__turn_thread.bot_turn_finished:
+        #     self.copy_game_items()
+
         painter = QPainter()
         painter.begin(self)
 
         self.draw_cells(painter)
-        self.draw_checkers(painter)
         self.draw_signature(painter)
+        self.draw_controls(painter)
+        self.draw_checkers(painter)
         self.draw_turn(painter)
         self.draw_score(painter)
-        self.draw_controls(painter)
-
         if self.__game.bot_active:
             self.draw_bot(painter)
 
         painter.end()
 
     def draw_controls(self, painter):
+        painter.setFont(self.FONT)
         for button in self.__controls:
             painter.drawImage(button.x(), button.y(),
                               QImage(f'images/{button.text()}.png').scaled(self.IMAGE_SIZE, self.IMAGE_SIZE))
@@ -332,28 +345,28 @@ class GameWindow(QMainWindow):
         painter.drawImage(x, y + shift,
                           Checker.BLACK.scaled(self.IMAGE_SIZE, self.IMAGE_SIZE))
         if not self.__game.bot_active:
-            for color, score in self.__game.score.items():
+            for color, score in self.score.items():
                 painter.drawText(x + self.IMAGE_SIZE, y + shift - 15, '{}: {}'.format(color, score))
                 shift *= 2
         else:
             player, bot = self.get_player_bot_colors()
             if self.__game.PLAYER_IS_WHITE:
-                painter.drawText(x + self.IMAGE_SIZE, y + shift - 15, f'{Game.YOU}: {self.__game.score[player]}')
-                painter.drawText(x + self.IMAGE_SIZE, y + shift * 2 - 15, f'{Game.BOT}: {self.__game.score[bot]}')
+                painter.drawText(x + self.IMAGE_SIZE, y + shift - 15, f'{Game.YOU}: {self.score[player]}')
+                painter.drawText(x + self.IMAGE_SIZE, y + shift * 2 - 15, f'{Game.BOT}: {self.score[bot]}')
             else:
-                painter.drawText(x + self.IMAGE_SIZE, y + shift - 15, f'{Game.BOT}: {self.__game.score[bot]}')
-                painter.drawText(x + self.IMAGE_SIZE, y + shift * 2 - 15, f'{Game.YOU}: {self.__game.score[player]}')
+                painter.drawText(x + self.IMAGE_SIZE, y + shift - 15, f'{Game.BOT}: {self.score[bot]}')
+                painter.drawText(x + self.IMAGE_SIZE, y + shift * 2 - 15, f'{Game.YOU}: {self.score[player]}')
 
     def draw_turn(self, painter):
         painter.setFont(self.FONT)
         if not self.__game.bot_active:
-            turn = 'First Player' if not self.__game.is_white_turn else 'Second Player'
+            turn = 'First Player' if not self.turn else 'Second Player'
             text = fr"{turn}'s turn"
         else:
-            turn = Game.YOU + "r" if self.__game.is_white_turn == self.__game.PLAYER_IS_WHITE else Game.BOT + "'s"
+            turn = Game.YOU + "r" if self.turn == self.__game.PLAYER_IS_WHITE else Game.BOT + "'s"
             text = fr"{turn} turn"
         painter.drawText((self.SHIFT + 1) * self.IMAGE_SIZE, 35, text)
-        image = Checker.WHITE if self.__game.is_white_turn else Checker.BLACK
+        image = Checker.WHITE if self.turn else Checker.BLACK
         painter.drawImage(self.SHIFT * self.IMAGE_SIZE, 0, image.scaled(self.IMAGE_SIZE, self.IMAGE_SIZE))
 
     def draw_cells(self, painter):
@@ -361,7 +374,7 @@ class GameWindow(QMainWindow):
             self.draw(cell.image, cell.coordinates, painter)
 
     def draw_checkers(self, painter):
-        for checker in self.__game.checkers:
+        for checker in self.checkers:
             self.draw(checker.image, checker.coordinates, painter)
 
     def draw(self, image, coordinates, painter):

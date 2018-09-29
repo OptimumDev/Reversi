@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 import copy
 from Point import Point
 from Units import Cell, Checker
@@ -123,7 +120,7 @@ class Game:
 
     @property
     def checkers(self):
-        return self.__checkers.values()
+        return list(self.__checkers.values())
 
     @property
     def occupied_coordinates(self):
@@ -225,18 +222,25 @@ class Game:
         print(time.time() - a)
         return best_turn
 
+    def is_last_hard_bot_turn(self, turn_number):
+        return turn_number == (self.HARD_BOT_DEPTH_INTELLIGENCE - 1) * 2
+
     def check_bot_turn(self, turn, turn_number=0):
         turn_number += 1
         bot_color = self.WHITE if self.BOT_IS_WHITE else self.BLACK
-        map_copy = self.copy_current_state()
-        self.make_turn(turn)
+        if not self.is_last_hard_bot_turn(turn_number):
+            map_copy = self.copy_current_state()
+            self.make_turn(turn)
         best_possible_turns = self.get_best_turns(self.get_possible_turns(), self.HARD_BOT_AMOUNT_INTELLIGENCE)
-        if turn_number == (self.HARD_BOT_DEPTH_INTELLIGENCE - 1) * 2 or len(best_possible_turns) == 0:
+        if self.is_last_hard_bot_turn(turn_number) or len(best_possible_turns) == 0:
             return self.__score[bot_color]
         best_variant_score = 0
         for turn in best_possible_turns:
-            score = self.check_bot_turn(turn, turn_number)
-            self.use_copy(map_copy)
+            if self.is_last_hard_bot_turn(turn_number):
+                score = self.get_turn_score(turn)
+            else:
+                score = self.check_bot_turn(turn, turn_number)
+                self.use_copy(map_copy)
             if score > best_variant_score:
                 best_variant_score = score
         return best_variant_score
@@ -267,11 +271,14 @@ class Game:
                 possible_turns.append(cell.coordinates)
         return possible_turns
 
+    def get_turn_score(self, turn):
+        color = self.WHITE if self.is_white_turn else self.BLACK
+        return self.score[color] + len(self.get_enemies_around(Checker(turn, self.is_white_turn)))
+
     def get_best_turns(self, possible_turns, amount):
         turns = []
         for turn in possible_turns:
-            color = self.WHITE if self.is_white_turn else self.BLACK
-            score = self.score[color] + len(self.get_enemies_around(Checker(turn, self.is_white_turn)))
+            score = self.get_turn_score(turn)
             turns.append((score, turn))
         if len(turns) <= amount:
             return [turn[1] for turn in turns]
