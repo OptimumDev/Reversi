@@ -4,6 +4,7 @@
 import copy
 from Point import Point
 from Units import Cell, Checker
+import time
 
 
 class Game:
@@ -13,7 +14,8 @@ class Game:
     BOT = 'Bot'
     PLAYER = 'Player'
     BOT_DIFFICULTIES = ['Easy', 'Normal', 'Hard']
-    HARD_BOT_INTELLIGENCE = 3
+    HARD_BOT_DEPTH_INTELLIGENCE = 5
+    HARD_BOT_AMOUNT_INTELLIGENCE = 3
 
     def __init__(self, *args):
         if len(args) < 2:
@@ -168,11 +170,6 @@ class Game:
                 self.__colored_checkers[self.BLACK].append(checker)
         return checkers_dict
 
-    def check_turn(self, coordinates, color=None):
-        if color is None:
-            color = self.is_white_turn
-        return len(self.get_enemies_around(Checker(coordinates, color))) > 0
-
     def pass_turn(self):
         self.__white_turn = not self.__white_turn
 
@@ -210,11 +207,12 @@ class Game:
         return best_position
 
     def hard_bot_turn(self):
+        a = time.time()
         map_copy = self.copy_current_state()
-        possible_turns = self.get_possible_turns()
+        best_possible_turns = self.get_best_turns(self.get_possible_turns(), self.HARD_BOT_AMOUNT_INTELLIGENCE)
         best_variant_score = 0
         best_turn = None
-        for turn in possible_turns:
+        for turn in best_possible_turns:
             score = self.check_bot_turn(turn)
             self.use_copy(map_copy)
             if score >= best_variant_score:
@@ -224,6 +222,7 @@ class Game:
             self.make_turn(best_turn)
         else:
             self.pass_turn()
+        print(time.time() - a)
         return best_turn
 
     def check_bot_turn(self, turn, turn_number=0):
@@ -231,11 +230,11 @@ class Game:
         bot_color = self.WHITE if self.BOT_IS_WHITE else self.BLACK
         map_copy = self.copy_current_state()
         self.make_turn(turn)
-        possible_turns = self.get_possible_turns()
-        if turn_number == (self.HARD_BOT_INTELLIGENCE - 1) * 2 or len(possible_turns) == 0:
+        best_possible_turns = self.get_best_turns(self.get_possible_turns(), self.HARD_BOT_AMOUNT_INTELLIGENCE)
+        if turn_number == (self.HARD_BOT_DEPTH_INTELLIGENCE - 1) * 2 or len(best_possible_turns) == 0:
             return self.__score[bot_color]
         best_variant_score = 0
-        for turn in possible_turns:
+        for turn in best_possible_turns:
             score = self.check_bot_turn(turn, turn_number)
             self.use_copy(map_copy)
             if score > best_variant_score:
@@ -268,11 +267,40 @@ class Game:
                 possible_turns.append(cell.coordinates)
         return possible_turns
 
+    def get_best_turns(self, possible_turns, amount):
+        turns = []
+        for turn in possible_turns:
+            color = self.WHITE if self.is_white_turn else self.BLACK
+            score = self.score[color] + len(self.get_enemies_around(Checker(turn, self.is_white_turn)))
+            turns.append((score, turn))
+        if len(turns) <= amount:
+            return [turn[1] for turn in turns]
+        turns.sort(key=lambda x: x[0])
+        return [turns[i][1] for i in range(amount)]
+
     def get_enemies_around(self, checker):
         enemies = []
         for direction in Point.get_directions():
             enemies += self.get_enemies(checker, direction)
         return enemies
+
+    def check_turn(self, turn, color=None):
+        if color is None:
+            color = self.is_white_turn
+        for direction in Point.get_directions():
+            if self.enemy_in_direction(Checker(turn, color), direction):
+                return True
+        return False
+
+    def enemy_in_direction(self, checker, direction):
+        enemy_coordinates = checker.coordinates + direction
+        enemy = self.get_checker_at(enemy_coordinates)
+        enemies = 0
+        while self.is_inside_field(enemy_coordinates) and enemy is not None and enemy.is_white != checker.is_white:
+            enemy_coordinates += direction
+            enemies += 1
+            enemy = self.get_checker_at(enemy_coordinates)
+        return enemies > 0 and self.is_inside_field(enemy_coordinates) and enemy is not None
 
     def add_checker(self, coordinates, is_white):
         color = self.WHITE if is_white else self.BLACK
