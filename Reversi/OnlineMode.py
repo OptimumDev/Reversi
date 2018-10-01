@@ -51,12 +51,14 @@ class Server(QThread):
     PORT = 37001
     ENCODING = 'utf-8'
 
-    def __init__(self, board_size, me_first):
+    def __init__(self, board_size, me_first, is_new, load_data):
         super().__init__()
         self.is_connected = False
 
         self.board_size = board_size
         self.me_first = me_first
+        self.is_new = is_new
+        self.load_data = load_data
 
         self.ip = socket.gethostbyname(socket.getfqdn())
         self.server_socket = socket.socket()
@@ -65,7 +67,8 @@ class Server(QThread):
 
     def run(self):
         self.client_socket, self.client_address = self.server_socket.accept()
-        self.client_socket.send(bytes(f'{self.board_size}, {int(not self.me_first)}', self.ENCODING))
+        message = f'{self.board_size}, {int(not self.me_first)}, {int(self.is_new)}, [{self.load_data}]'
+        self.client_socket.send(bytes(message, self.ENCODING))
         self.is_connected = True
 
     def make_turn(self, game, game_window, turn=None):
@@ -77,7 +80,7 @@ class Server(QThread):
 
 class Client:
 
-    INFO_PARSER = re.compile(r'(?P<board_size>\d+), (?P<me_first>\d)')
+    INFO_PARSER = re.compile(r'(?P<board_size>\d+), (?P<me_first>\d), (?P<is_new>\d), \[(?P<load_data>.*)\]', re.DOTALL)
 
     def __init__(self, server_ip):
         self.server_ip = server_ip
@@ -94,6 +97,8 @@ class Client:
             info = self.INFO_PARSER.search(game_info.decode())
             self.board_size = int(info['board_size'])
             self.me_first = bool(int(info['me_first']))
+            self.is_new = bool(int(info['is_new']))
+            self.load_data = info['load_data']
         except (TimeoutError, OSError):
             return False
         else:

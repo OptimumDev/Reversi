@@ -34,6 +34,8 @@ class SettingsWindow(QWidget):
         self.__ip = ''
         self.socket = None
         self.ip_error = False
+        self.is_new = True
+        self.load_data = ''
 
         self.__controls = []
         self.__current_title = 'Game Mode'
@@ -91,8 +93,7 @@ class SettingsWindow(QWidget):
     def host_join(self):
         self.set_up()
         self.__current_title = 'Host or Join?'
-        host = self.create_button("Host", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, self.choose_size)
-        #                                                                                           self.new_load)
+        host = self.create_button("Host", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT, self.new_load)
         join = self.create_button("Join", self.TWO_BUTTONS_POSITIONS[1], host.y(), self.ip)
         back = self.create_back_button(self.starting)
 
@@ -100,9 +101,18 @@ class SettingsWindow(QWidget):
         self.set_up()
         self.__current_title = 'New or Load?'
         new = self.create_button("New Game", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT,
-                                 self.choose_size if self.__is_online else self.pvp_pve)
-        load = self.create_button("Load", self.TWO_BUTTONS_POSITIONS[1], new.y(), self.load)
+                                 self.new_online if self.__is_online else self.pvp_pve)
+        load = self.create_button("Load", self.TWO_BUTTONS_POSITIONS[1], new.y(),
+                                  self.load_online if self.__is_online else self.load)
         back = self.create_back_button(self.host_join if self.__is_online else self.starting)
+
+    def new_online(self):
+        self.is_new = True
+        self.choose_size()
+
+    def load_online(self):
+        self.is_new = False
+        self.load()
 
     def choose_size(self):
         self.set_up()
@@ -146,7 +156,7 @@ class SettingsWindow(QWidget):
 
     def wait(self):
         self.set_up()
-        self.socket = Server(self.__board_size, self.__is_player_first)
+        self.socket = Server(self.__board_size, self.__is_player_first, self.is_new, self.load_data)
         self.socket.start()
         self.server_timer = QBasicTimer()
         self.server_timer.start(500, self)
@@ -169,7 +179,7 @@ class SettingsWindow(QWidget):
     def timerEvent(self, event):
         if self.socket.is_connected:
             self.server_timer.stop()
-            self.run()
+            self.run_load_online() if self.__is_online and not self.is_new else self.run()
 
     def ip(self):
         self.set_up()
@@ -199,8 +209,9 @@ class SettingsWindow(QWidget):
         if self.socket.connect_to_server():
             self.__board_size = self.socket.board_size
             self.__is_player_first = self.socket.me_first
+            self.load_data = self.socket.load_data
             self.ip_error = False
-            self.run()
+            self.run_load_online() if self.__is_online and not self.is_new else self.run()
         else:
             self.ip_error = True
             self.update()
@@ -231,15 +242,24 @@ class SettingsWindow(QWidget):
 
     def load(self):
         folder = 'online' if self.__is_online else 'offline'
-        name = QFileDialog.getOpenFileName(self, 'Chose Save File', f'saves/{folder}/', 'Save Files (*.save)')[0]
-        if name == '':
+        load_file_name = QFileDialog.getOpenFileName(self, 'Chose Save File', f'saves/{folder}/',
+                                                          'Save Files (*.save)')[0]
+        if load_file_name == '':
             return
-        GameWindow(False, name, self.__is_online, self.socket)
-        self.hide()
+        self.load_data = open(load_file_name, 'r').read()
+        if self.__is_online:
+            self.first()
+        else:
+            GameWindow(False, load_file_name, self.__is_online, self.socket, None)
+            self.hide()
 
     def run(self):
         GameWindow(True, self.__board_size, self.__is_bot_active, self.__is_player_first, self.__bot_difficulty,
                    self.__is_online, self.socket)
+        self.hide()
+
+    def run_load_online(self):
+        GameWindow(False, self.load_data, self.__is_online, self.__is_player_first, self.socket)
         self.hide()
 
     def paintEvent(self, event):

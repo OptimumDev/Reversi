@@ -70,10 +70,8 @@ class Game:
             self.__checkers[black_checker.coordinates.to_tuple()] = black_checker
             self.__occupied_coordinates.append(black_checker.coordinates)
 
-    def load(self, file_name):
+    def load(self, data):
         load_data = []
-        with open(file_name, 'r') as file:
-            data = file.read().splitlines()
         if data[0] == 'pvp':
             load_data.append(False)
             load_data.append(0)
