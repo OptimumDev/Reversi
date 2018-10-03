@@ -31,7 +31,6 @@ def test_checker_adding():
 
 def bot_turn_test(bot_level):
     game = Game(True, 4, True, False, bot_level)
-    a = game.is_white_turn
     color = Game.WHITE if game.BOT_IS_WHITE else Game.BLACK
     starting_score = game.score[color]
     game.bot_turn()

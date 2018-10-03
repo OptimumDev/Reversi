@@ -56,7 +56,7 @@ class GameWindow(QMainWindow):
         self.turn = self.__game.is_white_turn
         self.score = copy.deepcopy(self.__game.score)
 
-        self.initUI()
+        self.init_ui()
         self.show()
 
         if self.__game.PLAYER_IS_WHITE and self.__game.bot_active and not self.__game.is_white_turn:
@@ -68,7 +68,7 @@ class GameWindow(QMainWindow):
         else:
             self.highlight_buttons()
 
-    def initUI(self):
+    def init_ui(self):
         self.setWindowFlags(Qt.MSWindowsFixedSizeDialogHint | Qt.WindowTitleHint)
         self.set_geometry()
         self.setWindowIcon(self.ICON)
@@ -363,7 +363,6 @@ class GameWindow(QMainWindow):
         is_white_turn = self.turn if self.__game.bot_active else self.__game.is_white_turn
         if not self.__game.bot_active:
             if self.is_online:
-                a = self.me_first != is_white_turn
                 turn = Game.YOU + "r" if self.me_first != is_white_turn else 'Second Player\'s'
             else:
                 turn = 'First Player\'s' if not is_white_turn else 'Second Player\'s'

@@ -40,10 +40,10 @@ class SettingsWindow(QWidget):
         self.__controls = []
         self.__current_title = 'Game Mode'
 
-        self.initUI()
+        self.init_ui()
         self.show()
 
-    def initUI(self):
+    def init_ui(self):
         self.setWindowFlag(Qt.MSWindowsFixedSizeDialogHint)
         self.resize(self.WIDTH, self.HEIGHT)
         qt_rectangle = self.frameGeometry()
@@ -143,8 +143,8 @@ class SettingsWindow(QWidget):
         self.__controls = []
         me = self.create_button("Me", self.TWO_BUTTONS_POSITIONS[0], self.ONE_LINE_UPPER_SHIFT,
                                 partial(self.make_first, True))
-        other = self.create_button("Second Player" if self.__is_online else "Bot", self.TWO_BUTTONS_POSITIONS[1], me.y(),
-                                   partial(self.make_first, False))
+        other = self.create_button("Second Player" if self.__is_online else "Bot", self.TWO_BUTTONS_POSITIONS[1],
+                                   me.y(), partial(self.make_first, False))
         back = self.create_back_button(self.choose_size)
 
     def make_first(self, me_first):
@@ -185,7 +185,7 @@ class SettingsWindow(QWidget):
         self.set_up()
         self.__current_title = 'Enter Host IP'
         address = QLineEdit(self)
-        address.setGeometry((self.WIDTH - 300) / 2, self.UPPER_SHIFT + self.BUTTON_SIZE- self.BETWEEN_SHIFT, 300, 50)
+        address.setGeometry((self.WIDTH - 300) / 2, self.UPPER_SHIFT + self.BUTTON_SIZE - self.BETWEEN_SHIFT, 300, 50)
         address.setStyleSheet('background: white;')
         address.setFont(self.__font)
         address.textChanged[str].connect(self.change_ip)
@@ -243,7 +243,7 @@ class SettingsWindow(QWidget):
     def load(self):
         folder = 'online' if self.__is_online else 'offline'
         load_file_name = QFileDialog.getOpenFileName(self, 'Chose Save File', f'saves/{folder}/',
-                                                          'Save Files (*.save)')[0]
+                                                     'Save Files (*.save)')[0]
         if load_file_name == '':
             return
         self.load_data = open(load_file_name, 'r').read()
@@ -277,8 +277,8 @@ class SettingsWindow(QWidget):
         if self.ip_error:
             pen = painter.pen()
             painter.setPen(QPen(QColor('#ff0000')))
-            painter.drawText(0, self.UPPER_SHIFT / 2 + 10, self.WIDTH, self.UPPER_SHIFT, Qt.AlignCenter | Qt.AlignVCenter,
-                             'Failed to connect')
+            painter.drawText(0, self.UPPER_SHIFT / 2 + 10, self.WIDTH, self.UPPER_SHIFT,
+                             Qt.AlignCenter | Qt.AlignVCenter, 'Failed to connect')
             painter.setPen(pen)
 
     def draw_controls(self, painter):
