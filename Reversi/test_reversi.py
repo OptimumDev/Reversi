@@ -29,12 +29,26 @@ def test_checker_adding():
     assert current_len - starting_len == 1
 
 
-def test_bot_turn():
-    game = Game(True, 8, False, True, 1)
-    starting_len = len(game.checkers)
+def bot_turn_test(bot_level):
+    game = Game(True, 4, True, False, bot_level)
+    a = game.is_white_turn
+    color = Game.WHITE if game.BOT_IS_WHITE else Game.BLACK
+    starting_score = game.score[color]
     game.bot_turn()
-    current_len = len(game.checkers)
-    assert current_len > starting_len
+    current_score = game.score[color]
+    return current_score > starting_score
+
+
+def test_normal_bot_turn():
+    assert bot_turn_test(1)
+
+
+def test_easy_bot_turn():
+    assert bot_turn_test(0)
+
+
+def test_hard_bot_turn():
+    assert bot_turn_test(2)
 
 
 def test_game_finished():
@@ -76,6 +90,15 @@ Black
 
 
 def test_load():
-    game1 = Game(False, 'saves/bot1.rs')
+    save = [
+        'pve1',
+        '8',
+        'Black',
+        '3 3',
+        '4 4',
+        '',
+        '4 3',
+        '3 4']
+    game1 = Game(False, save)
     game2 = Game(True, 8, False, True, 1)
     assert len(game1.checkers) == len(game2.checkers)
